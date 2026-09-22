@@ -33,6 +33,10 @@ body {
 .topbar nav { display: flex; align-items: center; gap: 1rem; }
 .topbar .who { color: var(--muted); font-size: .9rem; }
 
+/* une déconnexion se poste, donc c'est un formulaire : il ne doit ni prendre de place ni se voir */
+form.logout { display: inline; margin: 0; }
+form.logout .button { border: 0; cursor: pointer; font: inherit; font-weight: 600; }
+
 main { max-width: 60rem; margin: 0 auto; padding: 2rem; }
 
 h1 { font-size: 1.8rem; margin-bottom: .25rem; }

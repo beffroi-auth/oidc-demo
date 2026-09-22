@@ -5,7 +5,9 @@
 {% block topbar_nav %}
     <span class="who">{{ app.user.userIdentifier }}</span>
     <a href="{{ path('app_home') }}">L'échelle</a>
-    <a class="button" href="{{ logout_path(definition.firewall) }}">Se déconnecter</a>
+    <form class="logout" method="post" action="{{ logout_path(definition.firewall) }}">
+        <button class="button" type="submit">Se déconnecter</button>
+    </form>
 {% endblock %}
 
 {% block body %}

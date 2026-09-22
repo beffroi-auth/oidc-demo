@@ -19,7 +19,12 @@
                         <span class="who">{{ app.user.userIdentifier }}</span>
                         <a href="{{ path('app_profile') }}">Profil</a>
                         <a href="{{ path('app_vault') }}">Coffre</a>
-                        <a class="button" href="{{ logout_path('main') }}">Se déconnecter</a>
+                        {# Une déconnexion se poste : en lien, Turbo la précharge au survol et la
+                           déclenche toute seule. Le formulaire est écrit à la main tant que le
+                           twig-bridge installé n'a pas "logout_form()", qui le construira. #}
+                        <form class="logout" method="post" action="{{ logout_path('main') }}">
+                            <button class="button" type="submit">Se déconnecter</button>
+                        </form>
                     {% else %}
                         <a class="button" href="{{ path('app_home') }}">Choisir un client</a>
                     {% endif %}

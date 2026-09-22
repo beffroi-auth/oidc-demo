@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head><meta charset="UTF-8"><title>Front-Channel Logout</title></head>
+    <body>
+        {# chargée dans un cadre par la page de déconnexion du fournisseur, jamais regardée par un humain #}
+        <p>{{ definition.name }} : {% if ended %}session terminée{% else %}rien à terminer{% endif %}
+            {% if sid %}(sid {{ sid }}){% endif %}</p>
+    </body>
+</html>

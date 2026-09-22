@@ -1,0 +1,41 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Profil OIDC{% endblock %}
+
+{% block body %}
+    <h1>Profil</h1>
+    <p class="lead">Identité issue du claim <code>sub</code> vérifié, claims récupérés sur l'endpoint UserInfo.</p>
+
+    <div class="card ok">
+        <table class="kv">
+            <tr><th>user identifier</th><td><code>{{ user.userIdentifier }}</code></td></tr>
+            <tr><th>classe</th><td><code>{{ user_class }}</code></td></tr>
+            <tr><th>rôles</th><td>{% for role in user.roles %}<code>{{ role }}</code> {% endfor %}</td></tr>
+        </table>
+    </div>
+
+    <h2>Claims standard</h2>
+    <table class="kv">
+        {% for claim, value in claims %}
+            <tr><th>{{ claim }}</th><td><code>{{ value is iterable ? value|json_encode : value }}</code></td></tr>
+        {% endfor %}
+    </table>
+
+    {% if additional_claims is not empty %}
+        <h2>Claims additionnels</h2>
+        <table class="kv">
+            {% for claim, value in additional_claims %}
+                <tr><th>{{ claim }}</th><td><code>{{ value is iterable ? value|json_encode : value }}</code></td></tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+
+    <h2>ID token</h2>
+    <p class="muted">Validé par l'authenticator : <code>iss</code>, <code>aud</code>, <code>exp</code>, <code>iat</code>, <code>nbf</code>, <code>nonce</code>, <code>azp</code>.</p>
+    <pre>{{ id_token_claims|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_SLASHES')) }}</pre>
+    <details><summary>JWT brut</summary><pre class="jwt">{{ id_token }}</pre></details>
+
+    <h2>Access token</h2>
+    <pre>{{ access_token_claims|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_SLASHES')) }}</pre>
+    <details><summary>JWT brut</summary><pre class="jwt">{{ access_token }}</pre></details>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}L'échelle des clients{% endblock %}
+
+{% block body %}
+    <h1>Une échelle de clients</h1>
+    <p class="lead">Le même fournisseur, la même identité, cinq clients. D'un barreau au suivant, une chose
+        change et une seule : comment le client s'authentifie, par où la réponse d'autorisation revient, de
+        quoi le jeton d'accès est fait, et ce qu'une déconnexion atteint. Le dernier barreau demande tout ce
+        que FAPI 2.0 a.</p>
+
+    <ol class="ladder">
+        {% for slug, rung in rungs %}
+            <li class="card">
+                <h2>{{ loop.index }}. {{ rung.name }} <code>{{ rung.client }}</code></h2>
+                <p>{{ rung.adds }}</p>
+                <table class="kv">
+                    {% for what, how in rung.capabilities %}
+                        <tr><th>{{ what }}</th><td>{{ how }}</td></tr>
+                    {% endfor %}
+                </table>
+                <p><a class="button" href="{{ path('app_ladder_profile', {rung: slug}) }}">Se connecter avec ce client</a></p>
+            </li>
+        {% endfor %}
+    </ol>
+
+    <h2>Ce que ce fournisseur sert</h2>
+    <p>Les cinq barreaux tournent sur <code>{{ provider_uri }}</code>, sans configuration particulière :
+        c'est ce que chaque client a enregistré qui décide de ce qu'il reçoit.</p>
+    <p class="note">Le dernier barreau n'est pas un pare-feu <code>oidc_login</code> : la requête poussée et
+        signée, la réponse signée, le jeton lié et les documents chiffrés sont ce que l'authenticator de
+        Symfony ne sait pas encore faire (<code>RP-04</code>, <code>RP-05</code>, <code>RP-06</code> et
+        <code>RP-16</code> du statut Symfony). Il est écrit ici, dans cette application de laboratoire, et
+        il ne ferme aucun de ces manques.</p>
+{% endblock %}

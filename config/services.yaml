@@ -13,11 +13,52 @@ services:
     _defaults:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+        bind:
+            string $providerUri: '%env(OIDC_PROVIDER_URI)%'
+            string $clientId: '%env(OIDC_CLIENT_ID)%'
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
     App\:
         resource: '../src/'
 
+    # the discovery service the "oidc_login" firewall builds, injected as-is so the
+    # demo reads the very document the authenticator uses
+    App\Controller\DemoController:
+        arguments:
+            $discovery: '@security.authenticator.oidc_login.discovery.main'
+
+    # Which local session each provider session opened, for the back-channel logout of the
+    # "main" firewall: the map lives in a pool of its own, under the client this instance
+    # is registered as, so that two instances of this demo on one machine, signed in on the
+    # same provider session, do not overwrite each other's entry. An application deployed
+    # on several servers gives this the store they share instead.
+    app.oidc_session_registry.cache:
+        class: Symfony\Component\Cache\Adapter\FilesystemAdapter
+        arguments:
+            - 'oidc_sessions'
+            - 0
+            - '%kernel.cache_dir%/oidc-sessions/%env(OIDC_CLIENT_ID)%'
+
+    app.oidc_session_registry:
+        class: Symfony\Component\Security\Http\Oidc\CacheOidcSessionRegistry
+        arguments:
+            - '@app.oidc_session_registry.cache'
+            - '@session.handler'
+            - 'main'
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    # The laboratory client of the last rung of the ladder (heidi#201): the one thing here that is not
+    # Symfony's "oidc_login", because what that rung asks for is what the authenticator cannot do yet.
+    App\Security\Fapi\FapiClient:
+        arguments:
+            $httpClient: '@http_client'
+            $cache: '@cache.app'
+            $clock: '@clock'
+            $providerUri: '%env(OIDC_PROVIDER_URI)%'
+            $clientId: '%env(DEMO_FAPI_CLIENT_ID)%'
+            $redirectUri: '%env(DEMO_BASE_URI)%/c/fapi/callback'
+            $signatureKey: '%env(DEMO_FAPI_JWK)%'
+            $encryptionKey: '%env(DEMO_FAPI_ENCRYPTION_JWK)%'

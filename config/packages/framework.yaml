@@ -3,7 +3,24 @@ framework:
     secret: '%env(APP_SECRET)%'
 
     # Note that the session will be started ONLY if you read or write from it.
-    session: true
+    session:
+        # A "Lax" cookie, the default, is not sent on a cross-site POST, which is what the
+        # provider answering in "form_post" makes of the callback: the session holding the
+        # "state" and the PKCE verifier of the pending login would not be there at all.
+        # That is what the mode costs an application, and it is all it costs: "None" is
+        # only ever sent over HTTPS, which this response mode is served over anyway.
+        cookie_samesite: none
+
+    # The resource server half of this demonstration: where the introspection endpoint of the
+    # provider lives and how this client authenticates there (RFC 7662 section 2.1). The firewalls
+    # below configure only what the answer is confronted with; the transport is this scoped client,
+    # whose credentials are the ones of the client the access token was issued to, because the
+    # provider describes a token to that client and to no other (RFC 7662 section 2.2).
+    http_client:
+        scoped_clients:
+            introspection.client:
+                base_uri: '%env(OIDC_INTROSPECTION_URI)%'
+                auth_basic: '%env(OIDC_CLIENT_ID)%:%env(OIDC_CLIENT_SECRET)%'
 
     #esi: true
     #fragments: true

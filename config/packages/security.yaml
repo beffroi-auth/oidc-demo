@@ -1,39 +1,260 @@
 security:
-    # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
-    password_hashers:
-        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
-
-    # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
+    # the "oidc" user provider builds a self-contained OidcUser from the claims collected
+    # during authentication; swap it for an entity provider to map claims onto
+    # your own user and grant roles
     providers:
-        users_in_memory: { memory: null }
+        oidc:
+            oidc: ~
 
     firewalls:
         dev:
-            # Ensure dev tools and static assets are always allowed
             pattern: ^/(_profiler|_wdt|assets|build)/
             security: false
+        # The resource server: three firewalls, one route each, on the very same access token
+        # this application already holds for its user. They differ only in how the token is
+        # checked, which is the whole point of the demonstration.
+        #
+        # RFC 7662: the token is described by the provider, which knows it whatever its shape,
+        # so a revoked token stops being accepted on the next request.
+        api_introspection:
+            pattern: ^/api/me$
+            stateless: true
+            access_token:
+                token_handler:
+                    oauth2:
+                        http_client: introspection.client
+                        issuer: '%env(OIDC_PROVIDER_URI)%'
+                        audience: '%env(OIDC_CLIENT_ID)%'
+
+        # RFC 9701: the same answer, signed by the provider, so that what the resource server
+        # acts on is not just what came back over the connection. The keys it is verified
+        # against are read from the RFC 8414 metadata of the provider, at
+        # /.well-known/oauth-authorization-server, and only the "jwks_uri" is taken from it.
+        api_introspection_signed:
+            pattern: ^/api/me/signed$
+            stateless: true
+            access_token:
+                token_handler:
+                    oauth2:
+                        http_client: introspection.client
+                        issuer: '%env(OIDC_PROVIDER_URI)%'
+                        audience: '%env(OIDC_CLIENT_ID)%'
+                        response_signature:
+                            enabled: true
+                            discovery:
+                                enabled: true
+
+        # RFC 9068: an "at+jwt" verified here, against the JWKS of the provider, without asking
+        # it anything. Nothing reaches the provider, so nothing tells this firewall that the
+        # token was revoked: it is accepted until it expires. That is the trade the two shapes
+        # of access token are.
+        api_offline:
+            pattern: ^/api/me/offline$
+            stateless: true
+            access_token:
+                token_handler:
+                    oidc:
+                        discovery:
+                            base_uri: '%env(OIDC_PROVIDER_URI)%'
+                            # the "oauth2" handler above defaults this one to "cache.app"; the
+                            # "oidc" handler requires it, and omitting it raises a PHP warning
+                            # instead of a configuration error
+                            cache:
+                                id: cache.app
+                        issuers: ['%env(OIDC_PROVIDER_URI)%']
+                        audience: '%env(OIDC_CLIENT_ID)%'
+                        claim: sub
+                        enforce_at_jwt_type: true
+
+        # RFC 9449: the same answer once more, but this token is bound to a key and the request has to
+        # prove possession of it. The token travels under the "DPoP" scheme and the proof in the "DPoP"
+        # header, a signature over this very request that names the token it is presented with; a token
+        # bound to nothing, a proof made for another request and a proof signed by another key are all
+        # refused. Holding the token is no longer enough, which is the whole difference with the three
+        # firewalls above.
+        api_dpop_introspection:
+            pattern: ^/api/me/dpop/introspected$
+            stateless: true
+            access_token:
+                dpop: true
+                token_handler:
+                    oauth2:
+                        http_client: introspection.client
+                        issuer: '%env(OIDC_PROVIDER_URI)%'
+                        audience: '%env(OIDC_CLIENT_ID)%'
+
+        api_dpop:
+            pattern: ^/api/me/dpop$
+            stateless: true
+            access_token:
+                dpop: true
+                token_handler:
+                    oidc:
+                        discovery:
+                            base_uri: '%env(OIDC_PROVIDER_URI)%'
+                            cache:
+                                id: cache.app
+                        issuers: ['%env(OIDC_PROVIDER_URI)%']
+                        audience: '%env(OIDC_CLIENT_ID)%'
+                        claim: sub
+                        enforce_at_jwt_type: true
+
+        # The ladder of demonstration clients (heidi#201): one firewall per rung, each with a session of
+        # its own, so that several rungs can be signed in side by side and compared. A rung adds one
+        # thing to the one before it; what it adds is written in src/Ladder/Rungs.php, which is what the
+        # pages show, and registered on the provider in apps/op/config/packages/heidi.yaml of the code
+        # repository. They are declared before "main", which matches everything.
+        ladder_basic:
+            pattern: ^/c/basic/
+            lazy: true
+            oidc_login:
+                provider_uri: '%env(OIDC_PROVIDER_URI)%'
+                client_id: '%env(DEMO_BASIC_CLIENT_ID)%'
+                client_authentication:
+                    client_secret_basic: '%env(DEMO_BASIC_SECRET)%'
+                scope: ['openid', 'profile', 'email']
+                check_path: /c/basic/callback
+                start_path: /c/basic/start
+                login_path: /c/basic/login
+                failure_path: /c/basic/login
+                enable_end_session: true
+                post_logout_redirect_path: /
+            logout:
+                path: /c/basic/logout
+                target: /
+
+        # The same client authentication and the same response, and an access token that says nothing to
+        # whoever reads it: what tells this rung from the one above is what a resource server has to do
+        # with the token, ask the provider rather than verify a signature.
+        ladder_opaque:
+            pattern: ^/c/opaque/
+            lazy: true
+            oidc_login:
+                provider_uri: '%env(OIDC_PROVIDER_URI)%'
+                client_id: '%env(DEMO_OPAQUE_CLIENT_ID)%'
+                client_authentication:
+                    client_secret_basic: '%env(DEMO_OPAQUE_SECRET)%'
+                scope: ['openid', 'profile', 'email']
+                check_path: /c/opaque/callback
+                start_path: /c/opaque/start
+                login_path: /c/opaque/login
+                failure_path: /c/opaque/login
+                enable_end_session: true
+                post_logout_redirect_path: /
+            logout:
+                path: /c/opaque/logout
+                target: /
+
+        # The authorization response stops travelling in the URL: the provider answers with a page that
+        # posts it back (OAuth 2.0 Form Post Response Mode). The session cookie of this application is
+        # "SameSite=None" for that reason, in config/packages/framework.yaml.
+        ladder_form_post:
+            pattern: ^/c/form-post/
+            lazy: true
+            oidc_login:
+                provider_uri: '%env(OIDC_PROVIDER_URI)%'
+                client_id: '%env(DEMO_FORM_POST_CLIENT_ID)%'
+                client_authentication:
+                    client_secret_post: '%env(DEMO_FORM_POST_SECRET)%'
+                scope: ['openid', 'profile', 'email']
+                check_path: /c/form-post/callback
+                start_path: /c/form-post/start
+                login_path: /c/form-post/login
+                failure_path: /c/form-post/login
+                enable_end_session: true
+                post_logout_redirect_path: /
+                authorization_params:
+                    response_mode: form_post
+            logout:
+                path: /c/form-post/logout
+                target: /
+
+        # The client stops sharing a secret and proves a key instead (RFC 7523), and it is told of a
+        # logout in the browser of the user: the logout page of the provider loads
+        # /c/key/frontchannel-logout in a frame (Front-Channel Logout 1.0), which ends the session of
+        # this rung and of no other.
+        ladder_key:
+            pattern: ^/c/key/
+            lazy: true
+            oidc_login:
+                provider_uri: '%env(OIDC_PROVIDER_URI)%'
+                client_id: '%env(DEMO_KEY_CLIENT_ID)%'
+                client_authentication:
+                    private_key_jwt:
+                        key: '%env(base64:DEMO_KEY_JWK)%'
+                        algorithm: ES256
+                scope: ['openid', 'profile', 'email']
+                check_path: /c/key/callback
+                start_path: /c/key/start
+                login_path: /c/key/login
+                failure_path: /c/key/login
+                enable_end_session: true
+                post_logout_redirect_path: /
+            logout:
+                path: /c/key/logout
+                target: /
+
+        # The last rung, which is not an "oidc_login" firewall: the pushed and signed request, the signed
+        # response, the bound token and the encrypted documents are RP-04, RP-05, RP-06 and RP-16 of the
+        # Symfony status document, all open. Its authenticator lives in src/Security/Fapi/ and closes
+        # none of them; it is a laboratory client of the demonstration and nothing else.
+        ladder_fapi:
+            pattern: ^/c/fapi/
+            lazy: true
+            custom_authenticators:
+                - App\Security\Fapi\FapiAuthenticator
+            entry_point: App\Security\Fapi\FapiAuthenticator
+            logout:
+                path: /c/fapi/logout
+                target: /
+
         main:
             lazy: true
-            provider: users_in_memory
 
-            # Activate different ways to authenticate:
-            # https://symfony.com/doc/current/security.html#the-firewall
+            # everything else is left to its default: check_path "/oidc/callback",
+            # discovery_cache_ttl 3600, allowed_time_drift 0, login_path and failure_path
+            # "/login", PKCE S256, and the endpoints, which come from the discovery document
+            oidc_login:
+                provider_uri: '%env(OIDC_PROVIDER_URI)%'
+                client_id: '%env(OIDC_CLIENT_ID)%'
+                # the OP registered the client with this method (RFC 6749 section 2.3.1), and
+                # the resource server below introspects with the same credentials in the same
+                # way, since a provider describes a token to the client it was issued to
+                client_authentication:
+                    client_secret_basic: '%env(OIDC_CLIENT_SECRET)%'
+                scope: ['openid', 'profile', 'email']
+                # RFC 6749 section 6: the access token is renewed with the refresh token
+                # before it expires, in place, on the next request
+                refresh_access_token: true
+                # RP-Initiated Logout: /logout ends the session at the OP too, which sends
+                # the browser back to post_logout_redirect_path
+                enable_end_session: true
+                post_logout_redirect_path: /
+                # Back-Channel Logout 1.0: the provider posts a logout token here when a
+                # session this client signed in ends, wherever it ended, and the session
+                # it names is ended without the user going through any of it. The
+                # registry is the one below, a store of this instance alone, so that two
+                # demos running side by side on one machine do not share it
+                backchannel_logout:
+                    enabled: true
+                    session_registry: app.oidc_session_registry
+                # The mode the provider answers the authorization request in (OAuth 2.0
+                # Form Post Response Mode); "query" unless the run asks for "form_post"
+                authorization_params:
+                    response_mode: '%env(OIDC_RESPONSE_MODE)%'
 
-            # https://symfony.com/doc/current/security/impersonating_user.html
-            # switch_user: true
+            logout: true
 
-    # Note: Only the *first* matching rule is applied
     access_control:
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
-
-when@test:
-    security:
-        password_hashers:
-            # Password hashers are resource-intensive by design to ensure security.
-            # In tests, it's safe to reduce their cost to improve performance.
-            Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
-                algorithm: auto
-                cost: 4 # Lowest possible value for bcrypt
-                time_cost: 3 # Lowest possible value for argon
-                memory_cost: 10 # Lowest possible value for argon
+        # each rung of the ladder starts its flow when its own page is asked for without a session; the
+        # callbacks, the pages that say why a login failed and the front-channel logout URIs are reached
+        # without one on purpose
+        - { path: '^/c/[a-z-]+/profile$', roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/profile, roles: ROLE_USER }
+        # a request without a bearer token is not an authenticated one: the entry point of the
+        # "access_token" authenticator answers it with the 401 and the challenge of RFC 6750 section 3
+        - { path: ^/api/, roles: IS_AUTHENTICATED_FULLY }
+        # the vault needs a phishing-resistant login (OpenID Connect EAP ACR Values 1.0):
+        # a session opened with a password alone is sent back to the provider with
+        # acr_values=phr and prompt=login by the re-authentication entry point of oidc_login
+        - { path: ^/vault, roles: 'IS_AUTHENTICATED_IN_CONTEXT:phr' }

@@ -1,0 +1,78 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ definition.name }}{% endblock %}
+
+{% block topbar_nav %}
+    <span class="who">{{ app.user.userIdentifier }}</span>
+    <a href="{{ path('app_home') }}">L'échelle</a>
+    <a class="button" href="{{ logout_path(definition.firewall) }}">Se déconnecter</a>
+{% endblock %}
+
+{% block body %}
+    <h1>{{ definition.name }} <code>{{ definition.client }}</code></h1>
+    <p class="lead">{{ definition.adds }}</p>
+
+    <div class="card ok">
+        <h2>Session ouverte</h2>
+        <p>Connecté en tant que <strong>{{ app.user.userIdentifier }}</strong>, sur le pare-feu
+            <code>{{ definition.firewall }}</code>. Les autres barreaux gardent la leur : chaque pare-feu
+            tient sa session à lui.</p>
+    </div>
+
+    <h2>Ce que ce barreau a enregistré</h2>
+    <table class="kv">
+        {% for what, how in definition.capabilities %}
+            <tr><th>{{ what }}</th><td>{{ how }}</td></tr>
+        {% endfor %}
+    </table>
+
+    {% if observations %}
+        <h2>Ce que la connexion a fait</h2>
+        <table class="kv">
+            {% for observation in observations %}
+                <tr><th>{{ observation.0 }}</th><td>{{ observation.1 }}</td></tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+
+    <h2>Claims</h2>
+    <table class="kv">
+        {% for claim, value in claims %}
+            <tr><th>{{ claim }}</th><td>{{ value is iterable ? value|json_encode : value }}</td></tr>
+        {% else %}
+            <tr><td colspan="2">Aucune claim au-delà de l'identifiant.</td></tr>
+        {% endfor %}
+    </table>
+
+    {% set tokens = fapi_tokens ?? null %}
+    <h2>Jetons</h2>
+    {% if tokens %}
+        <h3>Objet de requête poussé</h3>
+        <p>Envoyé au point <code>/par</code>, jamais au navigateur. <code>{{ tokens.request_uri }}</code></p>
+        <pre class="jwt" data-jwt="request_object">{{ tokens.request_object }}</pre>
+
+        <h3>Réponse d'autorisation signée (JARM)</h3>
+        <pre class="jwt" data-jwt="authorization_response">{{ tokens.authorization_response }}</pre>
+
+        <h3>ID token, tel qu'il est arrivé</h3>
+        <p>Chiffré pour la clé de ce client, puis signé par le fournisseur : ce qui suit ne se lit pas sans
+            la clé privée du client.</p>
+        <pre class="jwt" data-jwt="id_token">{{ tokens.id_token }}</pre>
+
+        <h3>Access token</h3>
+        <p>Type <code>{{ tokens.token_type }}</code>, lié à la clé <code>{{ tokens.jkt }}</code>.</p>
+        <pre class="jwt" data-jwt="access_token">{{ tokens.access_token }}</pre>
+    {% else %}
+        <h3>ID token</h3>
+        <pre class="jwt" data-jwt="id_token">{{ id_token }}</pre>
+        <h3>Access token</h3>
+        <pre class="jwt" data-jwt="access_token">{{ access_token }}</pre>
+        {% if rung == 'opaque' %}
+            <p class="note">Rien à y lire : c'est une référence que le fournisseur seul sait résoudre. Un
+                serveur de ressources lui demande ce qu'elle est à chaque requête (RFC 7662), et une
+                révocation se fait donc sentir aussitôt.</p>
+        {% endif %}
+    {% endif %}
+
+    <p><a href="{{ path('app_home') }}">Revenir à l'échelle</a></p>
+{% endblock %}

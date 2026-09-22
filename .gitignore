@@ -18,3 +18,8 @@
 /public/assets/
 /assets/vendor/
 ###< symfony/asset-mapper ###
+
+###> castor demo ###
+# written by "castor demo" of the provider repository: the CA of its Caddy, for the PHP of this machine
+/php.ini
+###< castor demo ###

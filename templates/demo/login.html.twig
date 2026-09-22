@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Connexion{% endblock %}
+
+{% block body %}
+    <h1>Connexion</h1>
+
+    {% if error %}
+        <div class="card error">
+            <h2>Échec de l'authentification</h2>
+            <p>{{ error.messageKey|trans(error.messageData, 'security') }}</p>
+            <p class="muted">Détail : <code>{{ error.message }}</code></p>
+        </div>
+    {% else %}
+        <div class="card">
+            <p>Vous n'êtes pas authentifié.</p>
+        </div>
+    {% endif %}
+
+    <p><a class="button" href="{{ path('app_profile') }}">Se connecter via {{ provider_uri }}</a></p>
+{% endblock %}

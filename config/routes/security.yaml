@@ -1,3 +1,10 @@
 _security_logout:
     resource: security.route_loader.logout
     type: service
+
+# declares the "check_path" of every oidc_login firewall as a route, as the logout
+# routes above are: without it the provider's redirect reaches the router before the
+# firewall, and gets a 404
+_oidc_login_callbacks:
+    resource: security.authenticator.oidc_login.route_loader
+    type: service

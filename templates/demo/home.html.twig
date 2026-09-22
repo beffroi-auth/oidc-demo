@@ -1,0 +1,57 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}OIDC login demo{% endblock %}
+
+{% block body %}
+    <h1>OIDC Authorization Code Flow</h1>
+    <p class="lead">Cette application teste l'authenticator <code>oidc_login</code> de la PR
+        <a href="https://github.com/symfony/symfony/pull/64954">#64954</a>, branché sur un vrai Keycloak.</p>
+
+    {% if app.user %}
+        <div class="card ok">
+            <h2>Session ouverte</h2>
+            <p>Vous êtes authentifié en tant que <strong>{{ app.user.userIdentifier }}</strong>.</p>
+            <p><a class="button" href="{{ path('app_profile') }}">Voir les claims</a></p>
+        </div>
+    {% else %}
+        <div class="card">
+            <h2>Aucune session</h2>
+            <p>Ouvrir une page protégée déclenche l'entry point de l'authenticator : redirection vers le
+                provider, retour sur <code>/oidc/callback</code>, échange du code, ouverture de la session.</p>
+            <p><a class="button" href="{{ path('app_profile') }}">Démarrer le flow</a></p>
+        </div>
+    {% endif %}
+
+    <h2>Configuration du firewall</h2>
+    <table class="kv">
+        <tr><th>provider_uri</th><td><code>{{ provider_uri }}</code></td></tr>
+        <tr><th>client_id</th><td><code>{{ client_id }}</code></td></tr>
+        <tr><th>scope</th><td><code>openid profile email</code></td></tr>
+        <tr><th>check_path</th><td><code>/oidc/callback</code></td></tr>
+        <tr><th>PKCE</th><td><code>S256</code> (toujours envoyé par l'authenticator)</td></tr>
+    </table>
+
+    <h2>Document de découverte</h2>
+    <p class="muted">Lu par <code>OidcDiscovery</code> à partir du seul <code>provider_uri</code>, mis en cache dans <code>cache.app</code> pour <code>discovery_cache_ttl</code> secondes. Aucun endpoint n'est écrit dans la configuration.</p>
+    {% if discovery %}
+        <table class="kv">
+            {% for key in ['issuer', 'authorization_endpoint', 'token_endpoint', 'userinfo_endpoint', 'jwks_uri', 'end_session_endpoint'] %}
+                <tr><th>{{ key }}</th><td><code>{{ discovery[key]|default('(non annoncé)') }}</code></td></tr>
+            {% endfor %}
+        </table>
+        <details><summary>Document complet</summary><pre>{{ discovery|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_SLASHES')) }}</pre></details>
+    {% else %}
+        <div class="card error"><p>Découverte impossible : <code>{{ discovery_error }}</code></p></div>
+    {% endif %}
+
+    <h2>Étapes couvertes par la PR</h2>
+    <ol class="steps">
+        <li>Découverte <code>.well-known/openid-configuration</code> (mise en cache, TTL 3600 s)</li>
+        <li>Requête d'autorisation : <code>state</code>, <code>nonce</code>, <code>code_challenge</code> S256, stockés en session</li>
+        <li>Callback : validation du <code>state</code> en temps constant, consommation de la tentative</li>
+        <li>Échange du code (<code>client_secret_post</code> + <code>code_verifier</code>)</li>
+        <li>Validation des claims de l'ID token : <code>iss</code>, <code>aud</code>, <code>exp</code>, <code>iat</code>, <code>nbf</code>, <code>nonce</code>, <code>azp</code></li>
+        <li>Appel UserInfo et contrôle du <code>sub</code> (OIDC Core 1.0 §5.3.2)</li>
+        <li>Création de l'<code>OidcUser</code> par le user provider <code>oidc</code></li>
+    </ol>
+{% endblock %}

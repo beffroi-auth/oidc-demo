@@ -1,24 +1,39 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
     <head>
         <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
-        {% block stylesheets %}
-        {% endblock %}
-
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>{% block title %}OIDC login demo{% endblock %}</title>
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>🔐</text></svg>">
         {% block javascripts %}
             {% block importmap %}{{ importmap('app') }}{% endblock %}
         {% endblock %}
-
-        {% set frankenphp_hot_reload = app.request.server.get('FRANKENPHP_HOT_RELOAD') %}
-        {% if frankenphp_hot_reload %}
-        <meta name="frankenphp-hot-reload:url" content="{{ frankenphp_hot_reload }}">
-        <script src="https://cdn.jsdelivr.net/npm/idiomorph"></script>
-        <script src="https://cdn.jsdelivr.net/npm/frankenphp-hot-reload/+esm" type="module"></script>
-        {% endif %}
     </head>
     <body>
-        {% block body %}{% endblock %}
+        <header class="topbar">
+            <a class="brand" href="{{ path('app_home') }}">🔐 oidc_login demo</a>
+            <nav>
+                {# the ladder pages know which firewall they belong to and say so themselves #}
+                {% block topbar_nav %}
+                    {% if app.user %}
+                        <span class="who">{{ app.user.userIdentifier }}</span>
+                        <a href="{{ path('app_profile') }}">Profil</a>
+                        <a href="{{ path('app_vault') }}">Coffre</a>
+                        <a class="button" href="{{ logout_path('main') }}">Se déconnecter</a>
+                    {% else %}
+                        <a class="button" href="{{ path('app_home') }}">Choisir un client</a>
+                    {% endif %}
+                {% endblock %}
+            </nav>
+        </header>
+
+        <main>
+            {% block body %}{% endblock %}
+        </main>
+
+        <footer>
+            <a href="https://github.com/symfony/symfony/pull/64954">symfony/symfony#64954</a> ·
+            <code>{{ provider_uri|default('') }}</code>
+        </footer>
     </body>
 </html>

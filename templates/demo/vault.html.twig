@@ -1,0 +1,28 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Coffre{% endblock %}
+
+{% block body %}
+    <h1>Coffre</h1>
+    <p class="lead">Route protégée par <code>IS_AUTHENTICATED_IN_CONTEXT:phr</code> : l'ID token de la session porte <code>acr=phr</code>, une connexion résistante au hameçonnage.</p>
+
+    <div class="card ok">
+        <table class="kv">
+            <tr><th>acr</th><td><code data-acr>{{ acr }}</code></td></tr>
+            <tr><th>amr</th><td><code data-amr>{{ amr|json_encode }}</code></td></tr>
+            <tr><th>auth_time</th><td><code data-auth-time>{{ auth_time }}</code>{% if auth_time %} ({{ auth_time|date('c') }}){% endif %}</td></tr>
+            <tr><th>sid</th><td><code data-sid>{{ sid }}</code></td></tr>
+        </table>
+    </div>
+
+    <h2>Preuves du token de sécurité</h2>
+    <p class="muted">Ce que <code>oidc_login</code> a enregistré depuis <code>amr</code> et <code>auth_time</code> (<code>TokenInterface::getAuthenticationProofs()</code>).</p>
+    <table class="kv">
+        {% for method, at in proofs %}
+            <tr><th>{{ method }}</th><td><code>{{ at }}</code> ({{ at|date('c') }})</td></tr>
+        {% endfor %}
+    </table>
+
+    <h2>ID token</h2>
+    <pre>{{ id_token_claims|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_SLASHES')) }}</pre>
+{% endblock %}

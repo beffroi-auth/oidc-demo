@@ -59,8 +59,33 @@ final class LadderController extends AbstractController
             'access_token' => $token?->hasAttribute('oidc_access_token') === true ? $token->getAttribute('oidc_access_token') : null,
             'fapi_tokens' => $token?->hasAttribute(FapiAuthenticator::TOKENS_ATTRIBUTE) ? $token->getAttribute(FapiAuthenticator::TOKENS_ATTRIBUTE) : null,
             'observations' => $token?->hasAttribute(FapiAuthenticator::OBSERVATIONS_ATTRIBUTE) ? $token->getAttribute(FapiAuthenticator::OBSERVATIONS_ATTRIBUTE) : [],
+            // RFC 9396 section 7: what the access token says was granted beyond its scopes, read here so that
+            // the page shows it rather than showing a token with it buried inside. A client is not a resource
+            // server and verifies nothing of a token it merely carries: this is read to be printed.
+            'authorization_details' => self::grantedDetails($token?->hasAttribute('oidc_access_token') === true ? $token->getAttribute('oidc_access_token') : null),
             'provider_uri' => $this->providerUri,
         ]);
+    }
+
+    /**
+     * The "authorization_details" of a self-contained access token (RFC 9068 section 2.2), or none: an opaque
+     * token says nothing to whoever reads it, and a token of a rung that asked for no detail carries none.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private static function grantedDetails(mixed $accessToken): array
+    {
+        if (!\is_string($accessToken)) {
+            return [];
+        }
+        $parts = \explode('.', $accessToken);
+        if (3 !== \count($parts)) {
+            return [];
+        }
+        $payload = \json_decode((string) \base64_decode(\strtr($parts[1], '-_', '+/'), true), true);
+        $details = \is_array($payload) ? ($payload['authorization_details'] ?? null) : null;
+
+        return \is_array($details) ? \array_values(\array_filter($details, '\is_array')) : [];
     }
 
     /**

@@ -24,6 +24,34 @@
         {% endfor %}
     </ol>
 
+    <h2>Ce qui n'a pas de navigateur</h2>
+    <p>Trois flux du fournisseur ne se cliquent pas, parce qu'aucun navigateur de cette application n'y
+        entre : le client est un programme, ou c'est le fournisseur qui rappelle le client. Ils se jouent en
+        ligne de commande depuis le dépôt du fournisseur, et chacun affirme chaque étape.</p>
+    <table class="kv">
+        <tr>
+            <th><code>castor demo --ciba</code></th>
+            <td>Un client demande un utilisateur qu'il nomme et attend (CIBA Core 1.0). Cet utilisateur
+                trouve la demande sur <code>/approvals</code> du fournisseur, y lit le message que le client
+                a écrit, et l'autorise. Deux modes de livraison, parce qu'un client n'en enregistre qu'un :
+                celui où le client redemande jusqu'à ce qu'on ait répondu, et celui où le fournisseur le
+                rappelle sur un écouteur que le client a ouvert.</td>
+        </tr>
+        <tr>
+            <th><code>castor demo --assertion</code></th>
+            <td>Une assertion signée par un émetteur que le tenant croit, échangée contre un jeton d'accès
+                pour l'utilisateur qu'elle nomme (RFC 7523 §2.1). Personne ne s'est connecté, donc il n'y a
+                pas d'ID token : le sujet de l'assertion est un utilisateur du tenant par une identité liée
+                et par rien d'autre.</td>
+        </tr>
+        <tr>
+            <th><code>castor demo --native</code></th>
+            <td>Un programme installé sur la machine de qui le lance, qui écoute sur le port que le système
+                lui donne et reçoit la réponse d'autorisation sur l'interface de bouclage (RFC 8252 §7.3).
+                La course le joue deux fois, sur deux ports, contre une seule inscription.</td>
+        </tr>
+    </table>
+
     <h2>Ce que ce fournisseur sert</h2>
     <p>Les cinq barreaux tournent sur <code>{{ provider_uri }}</code>, sans configuration particulière :
         c'est ce que chaque client a enregistré qui décide de ce qu'il reçoit.</p>

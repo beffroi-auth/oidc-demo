@@ -71,6 +71,20 @@ final class Rungs
                 'Déconnexion' => 'RP-Initiated Logout, et le canal avant : la page de déconnexion du fournisseur charge une URI de ce client dans un cadre (Front-Channel Logout 1.0)',
             ],
         ],
+        'rar' => [
+            'name' => 'Ce qu\'il demande',
+            'firewall' => 'ladder_rar',
+            'client' => 'demo-rar',
+            'adds' => 'Le client ne demande plus une sorte de chose : il demande ce qu\'il peut faire, à quoi, et jusqu\'où.',
+            'capabilities' => [
+                'Authentification du client' => 'client_secret_basic',
+                'Requête d\'autorisation' => 'en clair dans la query, avec PKCE S256, et un authorization_details (RFC 9396) qu\'oidc_login envoie par authorization_params',
+                'Consentement' => 'la page du fournisseur dit le détail en mots, dans la langue du lecteur : la facture nommée, ce qui peut lui être fait, et le montant le plus élevé qui peut bouger',
+                'Réponse d\'autorisation' => 'code, state et iss dans la query',
+                'Jetons' => 'at+jwt portant authorization_details tel que la sorte du détail l\'a construit ; la réponse du token endpoint dit ce qu\'elle a accordé, et l\'introspection le rend',
+                'Déconnexion' => 'RP-Initiated Logout',
+            ],
+        ],
         'fapi' => [
             'name' => 'FAPI 2.0',
             'firewall' => 'ladder_fapi',

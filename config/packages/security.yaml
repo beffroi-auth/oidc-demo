@@ -216,6 +216,33 @@ security:
                 path: /c/key/logout
                 target: /
 
+        # The client does not ask for a kind of thing any more, it asks for what it may do, to what and how
+        # far (RFC 9396). "authorization_params" of the authenticator takes any parameter it does not manage
+        # itself, so the rich authorization request is not something only a laboratory client can send: this
+        # is "oidc_login" as it is, with one parameter more. The type of the detail,
+        # App\AuthorizationDetails\InvoicePaymentType, is one the provider's deployment wires and the client
+        # registered; a type nobody wired is refused at the redirect URI.
+        ladder_rar:
+            pattern: ^/c/rar/
+            lazy: true
+            oidc_login:
+                provider_uri: '%env(OIDC_PROVIDER_URI)%'
+                client_id: '%env(DEMO_RAR_CLIENT_ID)%'
+                client_authentication:
+                    client_secret_basic: '%env(DEMO_RAR_SECRET)%'
+                scope: ['openid', 'profile', 'invoices.read']
+                check_path: /c/rar/callback
+                start_path: /c/rar/start
+                login_path: /c/rar/login
+                failure_path: /c/rar/login
+                enable_end_session: true
+                post_logout_redirect_path: /
+                authorization_params:
+                    authorization_details: '%env(DEMO_RAR_AUTHORIZATION_DETAILS)%'
+            logout:
+                path: /c/rar/logout
+                target: /
+
         # The last rung, which is not an "oidc_login" firewall: the pushed and signed request, the signed
         # response, the bound token and the encrypted documents are RP-04, RP-05, RP-06 and RP-16 of the
         # Symfony status document, all open. Its authenticator lives in src/Security/Fapi/ and closes

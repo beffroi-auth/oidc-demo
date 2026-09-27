@@ -69,6 +69,20 @@
         <pre class="jwt" data-jwt="id_token">{{ id_token }}</pre>
         <h3>Access token</h3>
         <pre class="jwt" data-jwt="access_token">{{ access_token }}</pre>
+        {% if authorization_details is not empty %}
+            <h3>Ce que ce jeton accorde au-delà de ses scopes</h3>
+            <p>RFC 9396 §7 : le détail tel que sa sorte l'a construit, membres et listes dans l'ordre de
+                cette sorte et non dans celui de la requête, ce qui est ce qui permet à un consentement de
+                couvrir deux requêtes qui demandent la même chose. C'est un serveur de ressources qui
+                l'applique, pas cette page.</p>
+            <ul>
+                {% for detail in authorization_details %}
+                    <li data-authorization-detail="{{ detail.type|default('') }}">
+                        <code>{{ detail|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_SLASHES')) }}</code>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
         {% if rung == 'opaque' %}
             <p class="note">Rien à y lire : c'est une référence que le fournisseur seul sait résoudre. Un
                 serveur de ressources lui demande ce qu'elle est à chaque requête (RFC 7662), et une

@@ -11,8 +11,11 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\Security\Http\Oidc\OidcDiscovery;
 
 /**
- * Exercises the "oidc_login" authenticator added by symfony/symfony#64954 against
- * a real Keycloak realm.
+ * Exercises the "oidc_login" authenticator of Symfony against the provider this demonstration is written
+ * for, whose issuer is the only thing it is configured with: the profile of a signed-in user, the vault
+ * that asks for a phishing-resistant sign-in, and the page a failed login lands on. The ladder of clients
+ * serves the home page (LadderController), and the routes behind an access token serve the resource server
+ * (ApiController).
  */
 final class DemoController extends AbstractController
 {

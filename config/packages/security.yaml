@@ -72,6 +72,28 @@ security:
         # bound to nothing, a proof made for another request and a proof signed by another key are all
         # refused. Holding the token is no longer enough, which is the whole difference with the three
         # firewalls above.
+        # RFC 8693: a token this application did not ask for and was not issued, held by a gateway that
+        # acts for a service, and presented here because this is the resource it is addressed to. The
+        # "audience" of the handler is the identifier of this resource and not the client identifier of
+        # the four firewalls above (RFC 8707 §2): a token addressed to another resource is refused here
+        # whatever else it says. It is verified offline, because introspecting it is not open to this
+        # application: the provider describes a token to the client it was issued to (RFC 7662 §2.2),
+        # which is the gateway.
+        api_service:
+            pattern: ^/api/service$
+            stateless: true
+            access_token:
+                token_handler:
+                    oidc:
+                        discovery:
+                            base_uri: '%env(OIDC_PROVIDER_URI)%'
+                            cache:
+                                id: cache.app
+                        issuers: ['%env(OIDC_PROVIDER_URI)%']
+                        audience: '%env(OIDC_RESOURCE)%'
+                        claim: sub
+                        enforce_at_jwt_type: true
+
         api_dpop_introspection:
             pattern: ^/api/me/dpop/introspected$
             stateless: true

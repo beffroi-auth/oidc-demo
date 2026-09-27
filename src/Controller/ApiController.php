@@ -5,6 +5,7 @@ namespace App\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Authenticator\AccessTokenAuthenticator;
 
@@ -12,7 +13,7 @@ use Symfony\Component\Security\Http\Authenticator\AccessTokenAuthenticator;
  * The resource server half of the demonstration: the same answer behind five firewalls, which
  * differ only in how the access token that reached them was checked (config/packages/security.yaml).
  *
- * Nothing here knows which of the five it is serving: the badge of the authenticated token is what
+ * Nothing here knows which of the first five it is serving: the badge of the authenticated token is what
  * each firewall built from the claims it obtained, by introspection or by verifying a JWT, and the
  * point of the demonstration is that the answer does not change.
  */
@@ -63,6 +64,45 @@ final class ApiController extends AbstractController
     public function dpopIntrospected(Security $security): JsonResponse
     {
         return $this->identity($security, 'introspection, bound by DPoP');
+    }
+
+    /**
+     * RFC 8693 section 4.1: a token a gateway holds for the subject of a service, presented to the resource
+     * it is addressed to. What this application can know of it is what the token handler of Symfony hands
+     * over, the subject and the scopes; who is acting for that subject is in the token and is dropped on the
+     * way, so it is read back here from the payload the firewall has already verified. A resource server
+     * that must know through whom it was reached cannot get it from the authenticator.
+     */
+    #[Route('/api/service', name: 'api_service', methods: ['GET'])]
+    public function service(Security $security, Request $request): JsonResponse
+    {
+        $answer = $this->identity($security, 'at+jwt verified offline, addressed to this resource');
+        $claims = self::claimsOf($request);
+        $answer->setData([
+            ...(array) json_decode((string) $answer->getContent(), true),
+            'aud' => $claims['aud'] ?? null,
+            'act' => $claims['act'] ?? null,
+            'read_from' => 'the payload of the token, the authenticator passing neither aud nor act',
+        ]);
+
+        return $answer;
+    }
+
+    /**
+     * The claims of the bearer token of this request, whose signature the firewall has already verified:
+     * nothing is believed here that was not believed there, and nothing is verified twice.
+     *
+     * @return array<string, mixed>
+     */
+    private static function claimsOf(Request $request): array
+    {
+        $parts = explode('.', (string) preg_replace('/^Bearer\s+/i', '', (string) $request->headers->get('Authorization')));
+        if (3 !== count($parts)) {
+            return [];
+        }
+        $payload = json_decode((string) base64_decode(strtr($parts[1], '-_', '+/'), true), true);
+
+        return is_array($payload) ? $payload : [];
     }
 
     private function identity(Security $security, string $checkedBy): JsonResponse

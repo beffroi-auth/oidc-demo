@@ -281,16 +281,21 @@ security:
                 post_logout_redirect_path: /
                 # Back-Channel Logout 1.0: the provider posts a logout token here when a
                 # session this client signed in ends, wherever it ended, and the session
-                # it names is ended without the user going through any of it. The
-                # registry is the one below, a store of this instance alone, so that two
-                # demos running side by side on one machine do not share it
+                # it names is refused on the next request the browser makes, without the
+                # user going through any of it. The pool is a store of this instance alone,
+                # so that two demos running side by side on one machine do not share it
                 backchannel_logout:
                     enabled: true
-                    session_registry: app.oidc_session_registry
+                    cache: app.oidc_ended_sessions
                 # The mode the provider answers the authorization request in (OAuth 2.0
                 # Form Post Response Mode); "query" unless the run asks for "form_post"
                 authorization_params:
                     response_mode: '%env(OIDC_RESPONSE_MODE)%'
+
+            # what answers a denial of REQUIRES_PHR: ExceptionListener starts a re-authentication on
+            # its own only for IS_AUTHENTICATED_RECENTLY and IS_AUTHENTICATED_VERY_RECENTLY, so the
+            # application's own attribute is answered here (Symfony pull request #66235)
+            access_denied_handler: App\Security\Acr\AcrReAuthenticationHandler
 
             logout: true
 
@@ -304,6 +309,7 @@ security:
         # "access_token" authenticator answers it with the 401 and the challenge of RFC 6750 section 3
         - { path: ^/api/, roles: IS_AUTHENTICATED_FULLY }
         # the vault needs a phishing-resistant login (OpenID Connect EAP ACR Values 1.0):
-        # a session opened with a password alone is sent back to the provider with
-        # acr_values=phr and prompt=login by the re-authentication entry point of oidc_login
-        - { path: ^/vault, roles: 'IS_AUTHENTICATED_IN_CONTEXT:phr' }
+        # a session opened with a password alone is denied by App\Security\Acr\AcrVoter and sent
+        # back to the provider with acr_values=phr and prompt=login by the access denied handler
+        # of the "main" firewall. The classes that answer are app.acr.accepted_classes
+        - { path: ^/vault, roles: REQUIRES_PHR }

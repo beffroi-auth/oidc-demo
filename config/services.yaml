@@ -7,6 +7,10 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    # The policy of the vault, in one place: which authentication context classes answer for
+    # REQUIRES_PHR (OpenID Connect EAP ACR Values 1.0). AcrVoter grants on them and AcrValuesListener
+    # asks the provider for them, in this order of preference.
+    app.acr.accepted_classes: ['phr']
 
 services:
     # default configuration for services in *this* file
@@ -28,27 +32,38 @@ services:
         arguments:
             $discovery: '@security.authenticator.oidc_login.discovery.main'
 
-    # Which local session each provider session opened, for the back-channel logout of the
-    # "main" firewall: the map lives in a pool of its own, under the client this instance
-    # is registered as, so that two instances of this demo on one machine, signed in on the
-    # same provider session, do not overwrite each other's entry. An application deployed
-    # on several servers gives this the store they share instead.
-    app.oidc_session_registry.cache:
+    # Which provider sessions a logout token ended, for the back-channel logout of the "main"
+    # firewall: the pool is one of this instance alone, under the client it is registered as, so
+    # that two demos running side by side on one machine, signed in on the same provider session,
+    # do not read each other's entries. An application deployed on several servers gives the
+    # "cache" option of the firewall the store they share instead, since a logout token reaches
+    # any one server and the session it names was opened through another.
+    app.oidc_ended_sessions:
         class: Symfony\Component\Cache\Adapter\FilesystemAdapter
         arguments:
-            - 'oidc_sessions'
+            - 'oidc_ended_sessions'
             - 0
-            - '%kernel.cache_dir%/oidc-sessions/%env(OIDC_CLIENT_ID)%'
-
-    app.oidc_session_registry:
-        class: Symfony\Component\Security\Http\Oidc\CacheOidcSessionRegistry
-        arguments:
-            - '@app.oidc_session_registry.cache'
-            - '@session.handler'
-            - 'main'
+            - '%kernel.cache_dir%/oidc-ended-sessions/%env(OIDC_CLIENT_ID)%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    # The vault of this demonstration: a route that needs an authentication context class rather than
+    # a role. The handler is given the "oidc_login" authenticator of the "main" firewall, which is the
+    # re-authentication entry point it asks to start a stronger login, and the name of that firewall,
+    # under which the target path is saved so the provider sends the user back to /vault.
+    App\Security\Acr\AcrVoter:
+        arguments:
+            $acceptedClasses: '%app.acr.accepted_classes%'
+
+    App\Security\Acr\AcrValuesListener:
+        arguments:
+            $acceptedClasses: '%app.acr.accepted_classes%'
+
+    App\Security\Acr\AcrReAuthenticationHandler:
+        arguments:
+            $entryPoint: '@security.authenticator.oidc_login.main'
+            $firewallName: 'main'
 
     # The laboratory client of the last rung of the ladder (heidi#201): the one thing here that is not
     # Symfony's "oidc_login", because what that rung asks for is what the authenticator cannot do yet.

@@ -112,7 +112,7 @@
     "repositories": [
         {
             "type": "path",
-            "url": "../symfony-pr64954/src/Symfony/Component/Security/Core",
+            "url": "../symfony-oidc-pending/src/Symfony/Component/Security/Core",
             "options": {
                 "symlink": true,
                 "versions": {
@@ -122,7 +122,7 @@
         },
         {
             "type": "path",
-            "url": "../symfony-pr64954/src/Symfony/Component/Security/Http",
+            "url": "../symfony-oidc-pending/src/Symfony/Component/Security/Http",
             "options": {
                 "symlink": true,
                 "versions": {
@@ -132,7 +132,7 @@
         },
         {
             "type": "path",
-            "url": "../symfony-pr64954/src/Symfony/Bundle/SecurityBundle",
+            "url": "../symfony-oidc-pending/src/Symfony/Bundle/SecurityBundle",
             "options": {
                 "symlink": true,
                 "versions": {

@@ -1054,7 +1054,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         access_denied_url?: scalar|Param|null,
  *         access_denied_handler?: scalar|Param|null,
  *         entry_point?: scalar|Param|null, // An enabled authenticator name or a service id that implements "Symfony\Component\Security\Http\EntryPoint\AuthenticationEntryPointInterface".
- *         re_authentication_entry_point?: scalar|Param|null, // Service id implementing "Symfony\Component\Security\Http\EntryPoint\ReAuthenticationEntryPointInterface", asking an already authenticated user to prove possession of their credentials again when IS_AUTHENTICATED_RECENTLY or IS_AUTHENTICATED_VERY_RECENTLY is denied, or to authenticate in the context class IS_AUTHENTICATED_IN_CONTEXT: names when that one is denied. Defaults to the firewall entry point when that one implements it.
+ *         re_authentication_entry_point?: scalar|Param|null, // Service id implementing "Symfony\Component\Security\Http\EntryPoint\ReAuthenticationEntryPointInterface", asking an already authenticated user to prove possession of their credentials again when IS_AUTHENTICATED_RECENTLY or IS_AUTHENTICATED_VERY_RECENTLY is denied. Defaults to the firewall entry point when that one implements it.
  *         provider?: scalar|Param|null,
  *         stateless?: bool|Param, // Default: false
  *         lazy?: bool|Param, // Default: false
@@ -1161,6 +1161,10 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *                 },
  *                 id?: scalar|Param|null, // The id of a service implementing "ClientAuthenticationInterface", for a scheme Symfony does not ship, such as the "tls_client_auth" of RFC 8705, Section 2. The method it reports is only known once it is built, so the rules a public client cannot bend are then checked on the first request to this firewall instead of while the container compiles.
  *             },
+ *             dpop?: Param|string|array{ // Binds what the provider issues to a key this client holds, the Demonstrating Proof of Possession of RFC 9449. Every request to the provider then carries a proof signed with that key, the access token comes back bound to it and is presented under the "DPoP" scheme rather than "Bearer", and the authorization request names the key in "dpop_jkt" so that a stolen code cannot be exchanged by whoever does not hold it. Only configure it for a provider that announces "dpop_signing_alg_values_supported".
+ *                 key?: scalar|Param|null, // JSON-encoded JWK of the private key the proofs are signed with. Nothing is registered at the provider for it: the public half travels in the header of every proof. Keep it as you keep a client secret, since what it signs is what makes a bound token usable.
+ *                 algorithm?: "ES256"|"ES384"|"ES512"|"PS256"|"PS384"|"PS512"|"RS256"|"RS384"|"RS512"|Param, // The signature algorithm the proofs are signed with, which must be one your provider announces in "dpop_signing_alg_values_supported". All asymmetric, RFC 9449, Section 4.2 excluding a shared secret, which would let whoever shares it sign a proof. // Default: "ES256"
+ *             },
  *             scope?: list<scalar|Param|null>,
  *             start_path?: scalar|Param|null, // The path where the route loader declares a route that starts the flow by redirecting to the provider; link to it e.g. from the login page of a firewall offering several ways to log in. A route name is accepted too, in which case no route is declared for it. // Default: "/oidc/start"
  *             discovery_cache_ttl?: int|Param, // TTL in seconds for caching the OIDC discovery configuration, and for the provider JWKS when it advertises no cache lifetime itself. // Default: 3600
@@ -1184,11 +1188,10 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *             },
  *             enable_end_session?: bool|Param, // Enable RP-Initiated Logout via the OIDC end_session_endpoint. // Default: false
  *             post_logout_redirect_path?: scalar|Param|null, // Path or route to redirect to after OIDC logout. // Default: "/"
- *             backchannel_logout?: bool|array{ // Enable Back-Channel Logout 1.0: the provider pushes a logout token to this application when one of its sessions ends, and the session that login opened here is ended, without the end-user going through any of it. Register the URL of the "path" below with the provider as the "backchannel_logout_uri" of this client, and ask it for the "sid" claim ("backchannel_logout_session_required"), which is what names the session to end.
+ *             backchannel_logout?: bool|array{ // Enable Back-Channel Logout 1.0: the provider pushes a logout token to this application when one of its sessions ends, and the login that session opened here is refused on the next request the browser makes, without the end-user going through any of it. Register the URL of the "path" below with the provider as the "backchannel_logout_uri" of this client, and ask it for the "sid" claim ("backchannel_logout_session_required"), which is what names the session that ended.
  *                 enabled?: bool|Param, // Default: false
  *                 path?: scalar|Param|null, // The path where the provider posts its logout tokens. A route accepting POST is declared for it by the "security.authenticator.oidc_login.route_loader" service, as one is for "check_path"; leave the path outside of any access_control rule, as the request comes from the provider and carries no session of the end-user. // Default: "/oidc/backchannel-logout"
- *                 session_registry?: scalar|Param|null, // The id of a service implementing "OidcSessionRegistryInterface", which remembers the session each provider session opened. Defaults to one keeping the map in the "cache.app" pool and ending a session through the session handler of the application; declare your own when that pool is local to one server, as the logout token reaches any of them.
- *                 session_ttl?: int|Param, // How long an entry of the default registry is kept, in seconds. Defaults to "session.gc_maxlifetime", the lifetime PHP gives a session: an entry that expires first leaves a session no logout token can reach.
+ *                 cache?: scalar|Param|null, // The id of the PSR-6 pool remembering which provider sessions a logout token ended, so that the logins they opened are refused on their next request. It has to be shared by every server of the application, as a logout token reaches any of them and the session it names was opened by another; name your own pool when "cache.app" is local to one server. // Default: "cache.app"
  *             },
  *         },
  *         form_login?: array{
@@ -1392,9 +1395,9 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *             lifetime?: int|Param, // Default: 31536000
  *             path?: scalar|Param|null, // Default: "/"
  *             domain?: scalar|Param|null, // Default: null
- *             secure?: true|false|"auto"|Param, // Default: "auto"
+ *             secure?: true|false|"auto"|Param, // Defaults to the value of "framework.session.cookie_secure", or to "auto".
  *             httponly?: bool|Param, // Default: true
- *             samesite?: null|"lax"|"strict"|"none"|Param, // Default: "none"
+ *             samesite?: null|"lax"|"strict"|"none"|Param, // Defaults to the value of "framework.session.cookie_samesite", or to "lax".
  *             always_remember_me?: bool|Param, // Default: false
  *             remember_me_parameter?: scalar|Param|null, // Default: "_remember_me"
  *         },

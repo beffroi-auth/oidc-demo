@@ -56,9 +56,10 @@ final class DemoController extends AbstractController
     }
 
     /**
-     * Protected by access_control with IS_AUTHENTICATED_IN_CONTEXT:phr: a session whose ID
-     * token carries another "acr" is sent back to the provider for a passkey. The page shows
-     * what the authenticator recorded on the security token from the new ID token.
+     * Protected by access_control with REQUIRES_PHR: a session whose ID token carries another
+     * "acr" is denied by App\Security\Acr\AcrVoter and sent back to the provider for a passkey
+     * by App\Security\Acr\AcrReAuthenticationHandler. The page shows what the authenticator
+     * recorded on the security token from the new ID token.
      */
     #[Route('/vault', name: 'app_vault')]
     public function vault(Security $security): Response
@@ -67,7 +68,7 @@ final class DemoController extends AbstractController
         $idTokenClaims = self::decodeJwt($token?->getAttribute('oidc_id_token'));
 
         return $this->render('demo/vault.html.twig', [
-            'acr' => $token?->getAuthenticationContextClass(),
+            'acr' => $token?->hasAttribute('oidc_acr') === true ? $token->getAttribute('oidc_acr') : null,
             'proofs' => $token?->getAuthenticationProofs() ?? [],
             'auth_time' => $idTokenClaims['auth_time'] ?? null,
             'amr' => $idTokenClaims['amr'] ?? null,

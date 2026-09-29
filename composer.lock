@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f00be9dd71b7fce89abd2d5ca9ef4e85",
+    "content-hash": "0b3ce681d74dfe7816148347bb1f4732",
     "packages": [
         {
             "name": "brick/math",
@@ -6120,8 +6120,8 @@
             "version": "8.2.x-dev",
             "dist": {
                 "type": "path",
-                "url": "../symfony-pr64954/src/Symfony/Bundle/SecurityBundle",
-                "reference": "b709b1c14a37ba33f6b013db447334d3918e38ad"
+                "url": "../symfony-oidc-pending/src/Symfony/Bundle/SecurityBundle",
+                "reference": "e66f3e8fa41a3539f473a6585fe7553c1f0dc113"
             },
             "require": {
                 "composer-runtime-api": ">=2.1",
@@ -6141,7 +6141,7 @@
                 "symfony/service-contracts": "^2.5|^3"
             },
             "conflict": {
-                "symfony/framework-bundle": "<8.1"
+                "symfony/framework-bundle": "<8.2"
             },
             "require-dev": {
                 "symfony/asset": "^7.4|^8.0",
@@ -6151,7 +6151,7 @@
                 "symfony/dom-crawler": "^7.4|^8.0",
                 "symfony/expression-language": "^7.4|^8.0",
                 "symfony/form": "^7.4|^8.0",
-                "symfony/framework-bundle": "^8.1",
+                "symfony/framework-bundle": "^8.2",
                 "symfony/http-client": "^7.4|^8.0",
                 "symfony/ldap": "^7.4|^8.0",
                 "symfony/lock": "^7.4|^8.0",
@@ -6201,7 +6201,7 @@
             "version": "8.2.x-dev",
             "dist": {
                 "type": "path",
-                "url": "../symfony-pr64954/src/Symfony/Component/Security/Core",
+                "url": "../symfony-oidc-pending/src/Symfony/Component/Security/Core",
                 "reference": "792bf61ee6fd6187bd24321bc423ab6507a5a7f8"
             },
             "require": {
@@ -6335,8 +6335,8 @@
             "version": "8.2.x-dev",
             "dist": {
                 "type": "path",
-                "url": "../symfony-pr64954/src/Symfony/Component/Security/Http",
-                "reference": "154e12981699df9d22d7b3291d2379d5a9be1367"
+                "url": "../symfony-oidc-pending/src/Symfony/Component/Security/Http",
+                "reference": "1927e2346e1093fee3e9c10ada1325201ee49968"
             },
             "require": {
                 "php": ">=8.4.1",
@@ -6349,6 +6349,7 @@
                 "symfony/service-contracts": "^2.5|^3"
             },
             "conflict": {
+                "symfony/event-dispatcher": "<8.2",
                 "symfony/http-client-contracts": "<3.0",
                 "symfony/security-bundle": "<8.2"
             },

@@ -5501,7 +5501,7 @@
                                 },
                                 "re_authentication_entry_point": {
                                     "$ref": "#/$defs/types/scalar",
-                                    "description": "Service id implementing \"Symfony\\Component\\Security\\Http\\EntryPoint\\ReAuthenticationEntryPointInterface\", asking an already authenticated user to prove possession of their credentials again when IS_AUTHENTICATED_RECENTLY or IS_AUTHENTICATED_VERY_RECENTLY is denied, or to authenticate in the context class IS_AUTHENTICATED_IN_CONTEXT: names when that one is denied. Defaults to the firewall entry point when that one implements it."
+                                    "description": "Service id implementing \"Symfony\\Component\\Security\\Http\\EntryPoint\\ReAuthenticationEntryPointInterface\", asking an already authenticated user to prove possession of their credentials again when IS_AUTHENTICATED_RECENTLY or IS_AUTHENTICATED_VERY_RECENTLY is denied. Defaults to the firewall entry point when that one implements it."
                                 },
                                 "provider": {
                                     "$ref": "#/$defs/types/scalar"
@@ -6054,6 +6054,57 @@
                                                 }
                                             ]
                                         },
+                                        "dpop": {
+                                            "anyOf": [
+                                                {
+                                                    "$ref": "#/$defs/types/object_null",
+                                                    "properties": {
+                                                        "key": {
+                                                            "$ref": "#/$defs/types/scalar",
+                                                            "description": "JSON-encoded JWK of the private key the proofs are signed with. Nothing is registered at the provider for it: the public half travels in the header of every proof. Keep it as you keep a client secret, since what it signs is what makes a bound token usable."
+                                                        },
+                                                        "algorithm": {
+                                                            "anyOf": [
+                                                                {
+                                                                    "enum": [
+                                                                        "ES256",
+                                                                        "ES384",
+                                                                        "ES512",
+                                                                        "PS256",
+                                                                        "PS384",
+                                                                        "PS512",
+                                                                        "RS256",
+                                                                        "RS384",
+                                                                        "RS512"
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "$ref": "#/$defs/types/param"
+                                                                }
+                                                            ],
+                                                            "default": "ES256",
+                                                            "description": "The signature algorithm the proofs are signed with, which must be one your provider announces in \"dpop_signing_alg_values_supported\". All asymmetric, RFC 9449, Section 4.2 excluding a shared secret, which would let whoever shares it sign a proof."
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "key"
+                                                    ],
+                                                    "additionalProperties": false
+                                                },
+                                                {
+                                                    "type": [
+                                                        "string"
+                                                    ]
+                                                }
+                                            ],
+                                            "description": "Binds what the provider issues to a key this client holds, the Demonstrating Proof of Possession of RFC 9449. Every request to the provider then carries a proof signed with that key, the access token comes back bound to it and is presented under the \"DPoP\" scheme rather than \"Bearer\", and the authorization request names the key in \"dpop_jkt\" so that a stolen code cannot be exchanged by whoever does not hold it. Only configure it for a provider that announces \"dpop_signing_alg_values_supported\".",
+                                            "examples": [
+                                                {
+                                                    "key": "%env(OIDC_DPOP_KEY)%",
+                                                    "algorithm": "ES256"
+                                                }
+                                            ]
+                                        },
                                         "scope": {
                                             "$ref": "#/$defs/types/array_null",
                                             "items": {
@@ -6231,14 +6282,10 @@
                                                             "default": "/oidc/backchannel-logout",
                                                             "description": "The path where the provider posts its logout tokens. A route accepting POST is declared for it by the \"security.authenticator.oidc_login.route_loader\" service, as one is for \"check_path\"; leave the path outside of any access_control rule, as the request comes from the provider and carries no session of the end-user."
                                                         },
-                                                        "session_registry": {
+                                                        "cache": {
                                                             "$ref": "#/$defs/types/scalar",
-                                                            "description": "The id of a service implementing \"OidcSessionRegistryInterface\", which remembers the session each provider session opened. Defaults to one keeping the map in the \"cache.app\" pool and ending a session through the session handler of the application; declare your own when that pool is local to one server, as the logout token reaches any of them."
-                                                        },
-                                                        "session_ttl": {
-                                                            "$ref": "#/$defs/types/integer",
-                                                            "minimum": 1,
-                                                            "description": "How long an entry of the default registry is kept, in seconds. Defaults to \"session.gc_maxlifetime\", the lifetime PHP gives a session: an entry that expires first leaves a session no logout token can reach."
+                                                            "default": "cache.app",
+                                                            "description": "The id of the PSR-6 pool remembering which provider sessions a logout token ended, so that the logins they opened are refused on their next request. It has to be shared by every server of the application, as a logout token reaches any of them and the session it names was opened by another; name your own pool when \"cache.app\" is local to one server."
                                                         }
                                                     },
                                                     "additionalProperties": false
@@ -6251,9 +6298,10 @@
                                             ],
                                             "default": {
                                                 "enabled": false,
-                                                "path": "/oidc/backchannel-logout"
+                                                "path": "/oidc/backchannel-logout",
+                                                "cache": "cache.app"
                                             },
-                                            "description": "Enable Back-Channel Logout 1.0: the provider pushes a logout token to this application when one of its sessions ends, and the session that login opened here is ended, without the end-user going through any of it. Register the URL of the \"path\" below with the provider as the \"backchannel_logout_uri\" of this client, and ask it for the \"sid\" claim (\"backchannel_logout_session_required\"), which is what names the session to end."
+                                            "description": "Enable Back-Channel Logout 1.0: the provider pushes a logout token to this application when one of its sessions ends, and the login that session opened here is refused on the next request the browser makes, without the end-user going through any of it. Register the URL of the \"path\" below with the provider as the \"backchannel_logout_uri\" of this client, and ask it for the \"sid\" claim (\"backchannel_logout_session_required\"), which is what names the session that ended."
                                         }
                                     },
                                     "required": [
@@ -7364,7 +7412,7 @@
                                                     "$ref": "#/$defs/types/param"
                                                 }
                                             ],
-                                            "default": "auto"
+                                            "description": "Defaults to the value of \"framework.session.cookie_secure\", or to \"auto\"."
                                         },
                                         "httponly": {
                                             "$ref": "#/$defs/types/boolean",
@@ -7384,7 +7432,7 @@
                                                     "$ref": "#/$defs/types/param"
                                                 }
                                             ],
-                                            "default": "none"
+                                            "description": "Defaults to the value of \"framework.session.cookie_samesite\", or to \"lax\"."
                                         },
                                         "always_remember_me": {
                                             "$ref": "#/$defs/types/boolean",

@@ -1,13 +1,13 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}L'échelle des clients{% endblock %}
+{% block title %}The ladder of clients{% endblock %}
 
 {% block body %}
-    <h1>Une échelle de clients</h1>
-    <p class="lead">Le même fournisseur, la même identité, cinq clients. D'un barreau au suivant, une chose
-        change et une seule : comment le client s'authentifie, par où la réponse d'autorisation revient, de
-        quoi le jeton d'accès est fait, et ce qu'une déconnexion atteint. Le dernier barreau demande tout ce
-        que FAPI 2.0 a.</p>
+    <h1>A ladder of clients</h1>
+    <p class="lead">The same provider, the same identity, six clients. From one rung to the next, one thing
+        changes and one only: how the client authenticates, which way the authorization response comes
+        back, what its access token is made of, and what a logout reaches. The last rung asks for
+        everything FAPI 2.0 has.</p>
 
     <ol class="ladder">
         {% for slug, rung in rungs %}
@@ -19,45 +19,46 @@
                         <tr><th>{{ what }}</th><td>{{ how }}</td></tr>
                     {% endfor %}
                 </table>
-                <p><a class="button" href="{{ path('app_ladder_profile', {rung: slug}) }}">Se connecter avec ce client</a></p>
+                <p><a class="button" href="{{ path('app_ladder_profile', {rung: slug}) }}">Sign in with this client</a></p>
             </li>
         {% endfor %}
     </ol>
 
-    <h2>Ce qui n'a pas de navigateur</h2>
-    <p>Trois flux du fournisseur ne se cliquent pas, parce qu'aucun navigateur de cette application n'y
-        entre : le client est un programme, ou c'est le fournisseur qui rappelle le client. Ils se jouent en
-        ligne de commande depuis le dépôt du fournisseur, et chacun affirme chaque étape.</p>
+    <h2>What has no browser</h2>
+    <p>Some flows of the provider are never clicked, because no browser of this application goes into
+        them: the client is a program, or it is the provider that calls the client back. The ones below
+        are played from the command line in the provider's repository, and each one asserts every step.</p>
     <table class="kv">
         <tr>
             <th><code>castor demo --ciba</code></th>
-            <td>Un client demande un utilisateur qu'il nomme et attend (CIBA Core 1.0). Cet utilisateur
-                trouve la demande sur <code>/approvals</code> du fournisseur, y lit le message que le client
-                a écrit, et l'autorise. Deux modes de livraison, parce qu'un client n'en enregistre qu'un :
-                celui où le client redemande jusqu'à ce qu'on ait répondu, et celui où le fournisseur le
-                rappelle sur un écouteur que le client a ouvert.</td>
+            <td>A client asks for a user it names and waits (CIBA Core 1.0). That user finds the request
+                on <code>/approvals</code> of the provider, reads there the message the client wrote, and
+                authorizes it. Two delivery modes, because a client registers only one: the one where the
+                client asks again until it has been answered, and the one where the provider calls it back
+                on a listener the client opened.</td>
         </tr>
         <tr>
             <th><code>castor demo --assertion</code></th>
-            <td>Une assertion signée par un émetteur que le tenant croit, échangée contre un jeton d'accès
-                pour l'utilisateur qu'elle nomme (RFC 7523 §2.1). Personne ne s'est connecté, donc il n'y a
-                pas d'ID token : le sujet de l'assertion est un utilisateur du tenant par une identité liée
-                et par rien d'autre.</td>
+            <td>An assertion signed by an issuer the tenant trusts, exchanged for an access token for the
+                user it names (RFC 7523 §2.1). Nobody signed in, so there is no ID token: the subject of
+                the assertion is a user of the tenant through a linked identity and through nothing
+                else.</td>
         </tr>
         <tr>
             <th><code>castor demo --native</code></th>
-            <td>Un programme installé sur la machine de qui le lance, qui écoute sur le port que le système
-                lui donne et reçoit la réponse d'autorisation sur l'interface de bouclage (RFC 8252 §7.3).
-                La course le joue deux fois, sur deux ports, contre une seule inscription.</td>
+            <td>A program installed on the machine of whoever runs it, which listens on the port the
+                system gives it and receives the authorization response on the loopback interface
+                (RFC 8252 §7.3). The walk plays it twice, on two ports, against a single
+                registration.</td>
         </tr>
     </table>
 
-    <h2>Ce que ce fournisseur sert</h2>
-    <p>Les cinq barreaux tournent sur <code>{{ provider_uri }}</code>, sans configuration particulière :
-        c'est ce que chaque client a enregistré qui décide de ce qu'il reçoit.</p>
-    <p class="note">Le dernier barreau n'est pas un pare-feu <code>oidc_login</code> : la requête poussée et
-        signée, la réponse signée, le jeton lié et les documents chiffrés sont ce que l'authenticator de
-        Symfony ne sait pas encore faire (<code>RP-04</code>, <code>RP-05</code>, <code>RP-06</code> et
-        <code>RP-16</code> du statut Symfony). Il est écrit ici, dans cette application de laboratoire, et
-        il ne ferme aucun de ces manques.</p>
+    <h2>What this provider serves</h2>
+    <p>The six rungs run against <code>{{ provider_uri }}</code>, with no particular configuration: what
+        each client registered is what decides what it receives.</p>
+    <p class="note">The last rung is not an <code>oidc_login</code> firewall: the pushed and signed
+        request, the signed response, the bound token and the encrypted documents are what Symfony's
+        authenticator cannot do yet (<code>RP-04</code>, <code>RP-05</code>, <code>RP-06</code> and
+        <code>RP-16</code> of the Symfony status document). It is written here, in this laboratory
+        application, and it closes none of those gaps.</p>
 {% endblock %}

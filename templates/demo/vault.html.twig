@@ -1,10 +1,10 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Coffre{% endblock %}
+{% block title %}Vault{% endblock %}
 
 {% block body %}
-    <h1>Coffre</h1>
-    <p class="lead">Route protégée par <code>REQUIRES_PHR</code> : l'ID token de la session porte <code>acr=phr</code>, une connexion résistante au hameçonnage.</p>
+    <h1>Vault</h1>
+    <p class="lead">A route protected by <code>REQUIRES_PHR</code>: the ID token of the session carries <code>acr=phr</code>, a phishing-resistant login.</p>
 
     <div class="card ok">
         <table class="kv">
@@ -15,8 +15,8 @@
         </table>
     </div>
 
-    <h2>Preuves du token de sécurité</h2>
-    <p class="muted">Ce que <code>oidc_login</code> a enregistré depuis <code>amr</code> et <code>auth_time</code> (<code>TokenInterface::getAuthenticationProofs()</code>).</p>
+    <h2>Proofs on the security token</h2>
+    <p class="muted">What <code>oidc_login</code> recorded from <code>amr</code> and <code>auth_time</code> (<code>TokenInterface::getAuthenticationProofs()</code>).</p>
     <table class="kv">
         {% for method, at in proofs %}
             <tr><th>{{ method }}</th><td><code>{{ at }}</code> ({{ at|date('c') }})</td></tr>

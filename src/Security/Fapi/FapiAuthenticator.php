@@ -199,24 +199,24 @@ final class FapiAuthenticator implements AuthenticatorInterface, AuthenticationE
         $accessToken = self::payload((string) $tokens['access_token']);
 
         return [
-            ['Requête poussée (RFC 9126)', sprintf('request_uri %s, rien de la requête n\'est passé par le navigateur', $login['request_uri'])],
-            ['Objet de requête signé (RFC 9101)', sprintf('ES256, %d caractères, poussé au point /par', strlen((string) $login['request_object']))],
-            ['Réponse signée (JARM)', 'un seul paramètre "response", vérifié contre le JWK Set du fournisseur'],
-            ['Authentification du client (RFC 7523)', 'private_key_jwt : une assertion signée, aucun secret partagé'],
-            ['Jeton lié (RFC 9449)', sprintf(
-                'token_type %s, cnf.jkt %s, preuve signée pour chaque requête',
+            ['Pushed request (RFC 9126)', sprintf('request_uri %s, nothing of the request went through the browser', $login['request_uri'])],
+            ['Signed request object (RFC 9101)', sprintf('ES256, %d characters, pushed to the /par endpoint', strlen((string) $login['request_object']))],
+            ['Signed response (JARM)', 'a single "response" parameter, verified against the JWK Set of the provider'],
+            ['Client authentication (RFC 7523)', 'private_key_jwt: a signed assertion, no shared secret'],
+            ['Bound token (RFC 9449)', sprintf(
+                'token_type %s, cnf.jkt %s, a proof signed for every request',
                 $tokens['token_type'] ?? '?',
                 is_string($accessToken['cnf']['jkt'] ?? null) ? $accessToken['cnf']['jkt'] : (is_string($confirmation) ? $confirmation : '?'),
             )],
-            ['ID token chiffré (OIDC Core §3.1.3.7)', $idToken['encrypted']
-                ? sprintf('JWE %s, puis JWS %s', $idToken['encryption'] ?? '?', $idToken['algorithm'])
-                : sprintf('signé %s, non chiffré', $idToken['algorithm'])],
+            ['Encrypted ID token (OIDC Core §3.1.3.7)', $idToken['encrypted']
+                ? sprintf('JWE %s, then JWS %s', $idToken['encryption'] ?? '?', $idToken['algorithm'])
+                : sprintf('signed %s, not encrypted', $idToken['algorithm'])],
             ['UserInfo (OIDC Core §5.3.2)', sprintf(
-                '%s%s, sub comparé à celui de l\'ID token',
+                '%s%s, sub compared with the one of the ID token',
                 $userInfo['content_type'],
-                $userInfo['encrypted'] ? ', chiffré puis signé' : '',
+                $userInfo['encrypted'] ? ', encrypted then signed' : '',
             )],
-            ['Clé de la preuve', FapiClient::thumbprint($proofKey)],
+            ['Key of the proof', FapiClient::thumbprint($proofKey)],
         ];
     }
 

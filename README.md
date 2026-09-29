@@ -1,35 +1,35 @@
-# Démonstration OIDC
+# OIDC demonstration
 
-Application Symfony qui sert de client de référence à l'OpenID Provider de [beffroi-php/heidi](https://github.com/beffroi-php/heidi), sur l'authenticator `oidc_login` du cœur de Symfony. Elle est jouée par `castor demo` du dépôt du fournisseur, un drapeau par chose démontrée, et c'est là que se vérifie ce que le fournisseur émet : ce qui arrive ici doit être consommable sans aucun correctif de `oidc_login`.
+A Symfony application that is the reference client of the OpenID Provider of [beffroi-php/heidi](https://github.com/beffroi-php/heidi), on the `oidc_login` authenticator of the Symfony core. It is played by `castor demo` of the provider's repository, one flag per thing demonstrated, and it is where what the provider emits is checked: whatever arrives here must be consumable without any patch of `oidc_login`.
 
-Elle est trois choses à la fois :
+It is three things at once:
 
-- **Le client.** Le firewall `main` sur `oidc_login` : connexion, `/profile`, `/vault` qui exige une classe d'authentification, déconnexion RP-Initiated et Back-Channel.
-- **Le serveur de ressources.** Six firewalls sous `/api/`, sur l'access token que le client a obtenu. Quatre ne diffèrent que par la façon de le vérifier : par introspection (`/api/me`), par introspection signée (`/api/me/signed`), et deux fois avec un jeton lié par DPoP, la liaison lue sur l'`at+jwt` (`/api/me/dpop`) ou dans la réponse d'introspection (`/api/me/dpop/introspected`). Les deux autres démontrent autre chose : `/api/me/offline` ce qu'un `at+jwt` vérifié hors ligne continue de servir après la fin de la session, et `/api/service` le refus d'un jeton adressé ailleurs.
-- **L'échelle de clients.** Six barreaux sous `/c/<barreau>`, un client du fournisseur et un firewall chacun, de celui qui met toute la requête d'autorisation dans l'URL d'un navigateur à celui qui la pousse signée, lit une réponse signée, tient un jeton lié et ouvre un ID token chiffré. Ce que chaque barreau ajoute est dans `src/Ladder/Rungs.php`. Le dernier n'est pas un firewall `oidc_login` : ce qu'il demande est ce que l'authenticator ne sait pas encore faire, donc c'est un client de laboratoire à lui, sous `src/Security/Fapi/`.
+- **The client.** The `main` firewall on `oidc_login`: login, `/profile`, `/vault` which requires an authentication context class, RP-Initiated and Back-Channel logout.
+- **The resource server.** Six firewalls under `/api/`, on the access token the client obtained. Four differ only in how it is checked: by introspection (`/api/me`), by signed introspection (`/api/me/signed`), and twice with a token bound by DPoP, the binding read from the `at+jwt` (`/api/me/dpop`) or from the introspection response (`/api/me/dpop/introspected`). The other two demonstrate something else: `/api/me/offline` what an `at+jwt` verified offline keeps serving after the session ended, and `/api/service` the refusal of a token addressed elsewhere.
+- **The ladder of clients.** Six rungs under `/c/<rung>`, one client of the provider and one firewall each, from the one that puts the whole authorization request in the URL of a browser to the one that pushes it signed, reads a signed response, holds a bound token and opens an encrypted ID token. What each rung adds is in `src/Ladder/Rungs.php`. The last one is not an `oidc_login` firewall: what it asks for is what the authenticator cannot do yet, so it is a laboratory client of its own, under `src/Security/Fapi/`.
 
-## Sur quoi elle tourne
+## What it runs on
 
-Symfony 8.2, qui n'est pas taguée : `8.2.x-dev` est la seule version de cette branche, et `minimum-stability: dev` avec `prefer-stable: true` est ce qui la résout.
+Symfony 8.2, which is not tagged: `8.2.x-dev` is the only version of that branch, and `minimum-stability: dev` with `prefer-stable: true` is what resolves it.
 
-Trois paquets de sécurité ne viennent pas de Packagist mais d'un worktree local, monté en `path` repository (liens symboliques), parce que la démonstration s'appuie sur quatre commits qui ne sont pas encore fusionnés :
+Three security packages do not come from Packagist but from a local worktree, mounted as `path` repositories (symbolic links), because the demonstration relies on four commits that are not merged yet:
 
 ```
-~/Projects/symfony-oidc-pending                branche oidc-demo-pending
+~/Projects/symfony-oidc-pending                branch oidc-demo-pending
 vendor/symfony/security-core   -> ../../../symfony-oidc-pending/src/Symfony/Component/Security/Core
 vendor/symfony/security-http   -> ../../../symfony-oidc-pending/src/Symfony/Component/Security/Http
 vendor/symfony/security-bundle -> ../../../symfony-oidc-pending/src/Symfony/Bundle/SecurityBundle
 ```
 
-| Ce qui manque à 8.2 | Ce que la démonstration en fait | Où c'est |
+| What 8.2 lacks | What the demonstration does with it | Where it is |
 |---|---|---|
-| L'option `backchannel_logout` du firewall `oidc_login` | La déconnexion par canal arrière du firewall `main`, jouée par `castor demo --logout-others` | [#66196](https://github.com/symfony/symfony/pull/66196) |
-| L'option `dpop` de `oidc_login`, et le type du jeton d'accès | Le barreau `fapi` de l'échelle, qui lie son jeton à une clé qu'il détient | [#66239](https://github.com/symfony/symfony/pull/66239), deux commits |
-| L'option `dpop` de l'authenticator `access_token` | Les deux firewalls `api_dpop*`, qui n'acceptent un jeton lié que de qui prouve la clé | branche `security-dpop-resource-server`, ligne `RS-05` du document de statut, aucune pull request ouverte |
+| The `backchannel_logout` option of the `oidc_login` firewall | The back-channel logout of the `main` firewall, played by `castor demo --logout-others` | [#66196](https://github.com/symfony/symfony/pull/66196) |
+| The `dpop` option of `oidc_login`, and the type of the access token | The `fapi` rung of the ladder, which binds its token to a key it holds | [#66239](https://github.com/symfony/symfony/pull/66239), two commits |
+| The `dpop` option of the `access_token` authenticator | The two `api_dpop*` firewalls, which accept a bound token only from whoever proves the key | branch `security-dpop-resource-server`, line `RS-05` of the status document, no pull request open |
 
-Tout le reste vient de 8.2 telle quelle, la réponse `form_post` et la lecture de `acr` comprises.
+Everything else comes from 8.2 as it stands, the `form_post` response and the reading of `acr` included.
 
-Reconstruire la branche sur une 8.2 fraîche :
+Rebuilding the branch on a fresh 8.2:
 
 ```bash
 cd ~/Projects/symfony
@@ -38,35 +38,35 @@ git fetch upstream 8.2 \
   refs/pull/66239/head:refs/remotes/upstream/pr-66239 --force
 cd ~/Projects/symfony-oidc-pending
 git checkout -B oidc-demo-pending upstream/8.2
-git cherry-pick upstream/pr-66196            # la déconnexion par canal arrière
-git cherry-pick upstream/pr-66239~1 upstream/pr-66239   # DPoP côté client
-git cherry-pick security-dpop-resource-server           # DPoP côté serveur de ressources
+git cherry-pick upstream/pr-66196                       # the back-channel logout
+git cherry-pick upstream/pr-66239~1 upstream/pr-66239   # DPoP on the client side
+git cherry-pick security-dpop-resource-server           # DPoP at the resource server
 cd ~/Projects/oidc-demo && php bin/console cache:clear
 ```
 
-Les seuls conflits attendus sont dans les `CHANGELOG.md`, où les entrées s'ajoutent les unes aux autres.
+The only conflicts to expect are in the `CHANGELOG.md` files, where the entries add up to one another.
 
-## Le coffre
+## The vault
 
-`/vault` est la route qui exige une classe d'authentification et non un rôle : une session ouverte avec un mot de passe seul est renvoyée au fournisseur pour une passkey (OpenID Connect EAP ACR Values 1.0). Elle tourne entièrement sur 8.2, en trois pièces sous `src/Security/Acr/` :
+`/vault` is the route that requires an authentication context class rather than a role: a session opened with a password alone is sent back to the provider for a passkey (OpenID Connect EAP ACR Values 1.0). It runs entirely on 8.2, in three pieces under `src/Security/Acr/`:
 
-- `AcrVoter` vote sur l'attribut `REQUIRES_PHR` de la règle `access_control`, en lisant `oidc_acr`, l'attribut du token de sécurité où `oidc_login` enregistre la revendication `acr` de l'ID token.
-- `AcrReAuthenticationHandler` est l'`access_denied_handler` du firewall : il démarre la ré-authentification. `ExceptionListener` ne la démarre de lui-même que pour `IS_AUTHENTICATED_RECENTLY` et `IS_AUTHENTICATED_VERY_RECENTLY`, deux noms qu'il détient, donc l'attribut propre à une application est répondu par elle.
-- `AcrValuesListener` ajoute `acr_values` à la requête d'autorisation, et seulement sur la ré-authentification que le handler a démarrée. Le `prompt=login` et l'`id_token_hint` viennent de `startReAuthentication()`.
+- `AcrVoter` votes on the `REQUIRES_PHR` attribute of the `access_control` rule, reading `oidc_acr`, the attribute of the security token where `oidc_login` records the `acr` claim of the ID token.
+- `AcrReAuthenticationHandler` is the `access_denied_handler` of the firewall: it starts the re-authentication. `ExceptionListener` starts one by itself only for `IS_AUTHENTICATED_RECENTLY` and `IS_AUTHENTICATED_VERY_RECENTLY`, two names it holds itself, so an attribute belonging to an application is answered by that application.
+- `AcrValuesListener` adds `acr_values` to the authorization request, and only on the re-authentication the handler started. The `prompt=login` and the `id_token_hint` come from `startReAuthentication()`.
 
-Les classes qui répondent pour la route sont le paramètre `app.acr.accepted_classes`, en un seul endroit : le voter accorde sur elles et le listener les demande au fournisseur, dans cet ordre.
+The classes that answer for the route are the `app.acr.accepted_classes` parameter, in one place: the voter grants on them and the listener asks the provider for them, in that order.
 
-La pull request [#66235](https://github.com/symfony/symfony/pull/66235) déplace vers le point d'entrée la liste des refus qui démarrent une ré-authentification. Le jour où elle est fusionnée, le handler devient un point d'entrée décoré qui répond pour `REQUIRES_PHR`, et le reste ne change pas.
+Pull request [#66235](https://github.com/symfony/symfony/pull/66235) moves to the entry point the list of denials that start a re-authentication. The day it is merged, the handler becomes a decorated entry point answering for `REQUIRES_PHR`, and the rest does not change.
 
 ## Configuration
 
-- `config/packages/security.yaml` : le provider `oidc`, le firewall `main` avec `oidc_login` et `logout`, les six firewalls de l'échelle, les cinq du serveur de ressources, et l'`access_control` où `^/vault` demande `REQUIRES_PHR`.
-- `config/routes/security.yaml` : l'import du route loader `security.authenticator.oidc_login.route_loader`, qui déclare `/oidc/callback` et la route en POST de la déconnexion par canal arrière.
-- `.env` : les identifiants de clients et les URI. **Aucun secret n'est committé** : les valeurs que le fournisseur engendre vivent dans `.env.local`, que `castor demo` écrit et que git ignore, comme le `php.ini` qui fait confiance à l'autorité de certification de son Caddy.
+- `config/packages/security.yaml`: the `oidc` provider, the `main` firewall with `oidc_login` and `logout`, the six firewalls of the ladder, the six of the resource server, and the `access_control` where `^/vault` asks for `REQUIRES_PHR`.
+- `config/routes/security.yaml`: the import of the `security.authenticator.oidc_login.route_loader` service, which declares `/oidc/callback` and the POST route of the back-channel logout.
+- `.env`: the client identifiers and the URIs. **No secret is committed**: the values the provider generates live in `.env.local`, which `castor demo` writes and git ignores, as does the `php.ini` that trusts the certificate authority of its Caddy.
 
-## Lancer
+## Running it
 
-Depuis le dépôt du fournisseur, ce qui pointe la démonstration sur l'OP de développement et la démarre :
+From the provider's repository, which points the demonstration at the development OP and starts it:
 
 ```bash
 castor start
@@ -74,17 +74,16 @@ castor provision
 castor demo --check
 ```
 
-Chaque drapeau de `castor demo` joue une chose de bout en bout : `--check` une connexion et une déconnexion, `--passkey` le passage à `acr=phr` par `/vault`, `--form-post` la réponse postée depuis une autre origine, `--logout-others` une seconde instance déconnectée par canal arrière, `--resource-server` les cinq routes de l'API, `--dpop` un jeton lié à une clé, `--ladder` les six barreaux l'un après l'autre.
+Each flag of `castor demo` plays one thing end to end: `--check` a sign-in and a sign-out, `--passkey` the step-up to `acr=phr` through `/vault`, `--form-post` the response posted from another origin, `--logout-others` a second instance logged out by back channel, `--resource-server` the routes of the API, `--dpop` a token bound to a key, `--ladder` the six rungs one after the other.
 
-À la main, sans le fournisseur :
+By hand, without the provider:
 
 ```bash
 symfony server:start --port=8002 --daemon
 symfony server:log
 ```
 
-- `https://localhost:8002/` : page publique, état de la session, rappel de la configuration.
-- `https://localhost:8002/profile` : page protégée, déclenche le flow ; affiche l'`OidcUser`, les claims UserInfo, l'ID token et l'access token décodés.
-- `https://localhost:8002/vault` : le coffre ; affiche `acr`, `amr`, `auth_time`, `sid` et les preuves que `oidc_login` a enregistrées sur le token de sécurité.
-- `https://localhost:8002/login` : `login_path` et `failure_path`, affiche l'erreur d'authentification.
-- `https://localhost:8002/` liste les barreaux de l'échelle, chacun servi sous `/c/<barreau>/profile`.
+- `https://localhost:8002/` lists the rungs of the ladder, each served under `/c/<rung>/profile`.
+- `https://localhost:8002/profile`: a protected page, which starts the flow; it shows the `OidcUser`, the UserInfo claims, and the ID token and access token decoded.
+- `https://localhost:8002/vault`: the vault; it shows `acr`, `amr`, `auth_time`, `sid` and the proofs `oidc_login` recorded on the security token.
+- `https://localhost:8002/login`: `login_path` and `failure_path`, which shows the authentication error.

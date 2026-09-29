@@ -1,20 +1,20 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ definition.name }} : connexion refusée{% endblock %}
+{% block title %}{{ definition.name }}: login refused{% endblock %}
 
 {% block body %}
     <h1>{{ definition.name }}</h1>
     {% if error %}
         <div class="card error">
-            <h2>La connexion n'a pas abouti</h2>
+            <h2>The login did not go through</h2>
             <p>{{ error.messageKey|trans(error.messageData, 'security') }}</p>
-            <p class="muted">Détail : <code>{{ error.message }}</code></p>
+            <p class="muted">Detail: <code>{{ error.message }}</code></p>
         </div>
     {% else %}
         <div class="card">
-            <h2>Aucune session sur ce barreau</h2>
+            <h2>No session on this rung</h2>
         </div>
     {% endif %}
-    <p><a class="button" href="{{ path('app_ladder_profile', {rung: rung}) }}">Recommencer</a>
-        · <a href="{{ path('app_home') }}">Revenir à l'échelle</a></p>
+    <p><a class="button" href="{{ path('app_ladder_profile', {rung: rung}) }}">Start again</a>
+        · <a href="{{ path('app_home') }}">Back to the ladder</a></p>
 {% endblock %}

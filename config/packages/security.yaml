@@ -121,10 +121,10 @@ security:
                         claim: sub
                         enforce_at_jwt_type: true
 
-        # The ladder of demonstration clients (heidi#201): one firewall per rung, each with a session of
+        # The ladder of demonstration clients (beffroi#201): one firewall per rung, each with a session of
         # its own, so that several rungs can be signed in side by side and compared. A rung adds one
         # thing to the one before it; what it adds is written in src/Ladder/Rungs.php, which is what the
-        # pages show, and registered on the provider in apps/op/config/packages/heidi.yaml of the code
+        # pages show, and registered on the provider in apps/op/config/packages/beffroi.yaml of the code
         # repository. They are declared before "main", which matches everything.
         ladder_basic:
             pattern: ^/c/basic/

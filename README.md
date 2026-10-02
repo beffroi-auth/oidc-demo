@@ -1,6 +1,6 @@
 # OIDC demonstration
 
-A Symfony application that is the reference client of the OpenID Provider of [beffroi-php/heidi](https://github.com/beffroi-php/heidi), on the `oidc_login` authenticator of the Symfony core. It is played by `castor demo` of the provider's repository, one flag per thing demonstrated, and it is where what the provider emits is checked: whatever arrives here must be consumable without any patch of `oidc_login`.
+A Symfony application that is the reference client of the OpenID Provider of [beffroi-php/beffroi](https://github.com/beffroi-php/beffroi), on the `oidc_login` authenticator of the Symfony core. It is played by `castor demo` of the provider's repository, one flag per thing demonstrated, and it is where what the provider emits is checked: whatever arrives here must be consumable without any patch of `oidc_login`.
 
 It is three things at once:
 

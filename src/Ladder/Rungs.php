@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Ladder;
 
 /**
- * The ladder of demonstration clients (heidi#201), from the plainest client to the whole of FAPI 2.0.
+ * The ladder of demonstration clients (beffroi#201), from the plainest client to the whole of FAPI 2.0.
  *
  * One rung is one registration on the provider and one firewall here. A rung adds one thing to the one
  * before it, and what it adds is what the provider grew during the spike: how the client authenticates,

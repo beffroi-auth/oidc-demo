@@ -23,7 +23,7 @@ use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
- * The last rung of the ladder of demonstration clients (heidi#201): a client that asks the provider for
+ * The last rung of the ladder of demonstration clients (beffroi#201): a client that asks the provider for
  * everything FAPI 2.0 has, and that Symfony's "oidc_login" cannot be today.
  *
  * It pushes its authorization request instead of putting it in the URL of a browser (RFC 9126), signs

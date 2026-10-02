@@ -23,7 +23,7 @@ use Symfony\Component\Security\Http\SecurityRequestAttributes;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
 
 /**
- * The firewall of the last rung of the ladder (heidi#201), which is not an "oidc_login" one: what this
+ * The firewall of the last rung of the ladder (beffroi#201), which is not an "oidc_login" one: what this
  * rung asks of the provider is what `RP-04`, `RP-05`, `RP-06` and `RP-16` of the Symfony status document
  * say the authenticator cannot do yet.
  *

@@ -65,7 +65,7 @@ services:
             $entryPoint: '@security.authenticator.oidc_login.main'
             $firewallName: 'main'
 
-    # The laboratory client of the last rung of the ladder (heidi#201): the one thing here that is not
+    # The laboratory client of the last rung of the ladder (beffroi#201): the one thing here that is not
     # Symfony's "oidc_login", because what that rung asks for is what the authenticator cannot do yet.
     App\Security\Fapi\FapiClient:
         arguments:

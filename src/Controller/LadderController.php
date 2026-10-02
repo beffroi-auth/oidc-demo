@@ -15,7 +15,7 @@ use Symfony\Component\Security\Core\User\OidcUser;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 /**
- * The ladder of demonstration clients (heidi#201): one page to choose a rung, one page per rung once it
+ * The ladder of demonstration clients (beffroi#201): one page to choose a rung, one page per rung once it
  * signed in, and the two routes the last rung needs of its own.
  *
  * Every rung serves the same page, which is the point: what changes from one to the next is what the

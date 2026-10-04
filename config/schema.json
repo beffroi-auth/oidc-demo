@@ -1699,7 +1699,8 @@
                 "$ref": "#/$defs/types/object_null",
                 "properties": {
                     "secret": {
-                        "$ref": "#/$defs/types/scalar"
+                        "$ref": "#/$defs/types/scalar",
+                        "description": "A secret that must not change. The options that sign data default to it and take a list of secrets to rotate theirs."
                     },
                     "http_method_override": {
                         "$ref": "#/$defs/types/boolean",
@@ -2084,6 +2085,22 @@
                     "uri_signer": {
                         "$ref": "#/$defs/types/object_null",
                         "properties": {
+                            "secret": {
+                                "anyOf": [
+                                    {
+                                        "$ref": "#/$defs/types/array_null",
+                                        "items": {
+                                            "$ref": "#/$defs/types/scalar"
+                                        }
+                                    },
+                                    {
+                                        "type": [
+                                            "string"
+                                        ]
+                                    }
+                                ],
+                                "description": "Secret used to sign URIs, defaults to the \"kernel.secret\" parameter. List several to rotate it: the first one signs, all of them verify."
+                            },
                             "expiration": {
                                 "$ref": "#/$defs/types/integer_null",
                                 "default": null,
@@ -2092,6 +2109,7 @@
                         },
                         "additionalProperties": false,
                         "default": {
+                            "secret": [],
                             "expiration": null
                         },
                         "description": "URI signer configuration"
@@ -2429,6 +2447,11 @@
                                                 }
                                             ]
                                         }
+                                    },
+                                    "serializer": {
+                                        "$ref": "#/$defs/types/scalar",
+                                        "default": null,
+                                        "description": "Service id of the serializer that maps request payloads and query strings to controller arguments with #[MapRequestPayload] and #[MapQueryString], e.g. \"serializer.api\" for the named serializer \"api\"."
                                     }
                                 },
                                 "additionalProperties": false
@@ -2441,9 +2464,25 @@
                         ],
                         "default": {
                             "enabled": false,
-                            "formats": []
+                            "formats": [],
+                            "serializer": null
                         },
                         "description": "Request configuration"
+                    },
+                    "response": {
+                        "$ref": "#/$defs/types/object_null",
+                        "properties": {
+                            "serializer": {
+                                "$ref": "#/$defs/types/scalar",
+                                "default": null,
+                                "description": "Service id of the serializer that serializes the values returned by controllers with #[Serialize], e.g. \"serializer.api\" for the named serializer \"api\"."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "default": {
+                            "serializer": null
+                        },
+                        "description": "Response configuration"
                     },
                     "php_errors": {
                         "$ref": "#/$defs/types/object_null",
@@ -3810,9 +3849,30 @@
                                         "default": "messenger.transport.native_php_serializer",
                                         "description": "Service id to use as the default serializer for the transports."
                                     },
+                                    "signing_secret": {
+                                        "anyOf": [
+                                            {
+                                                "$ref": "#/$defs/types/array_null",
+                                                "items": {
+                                                    "$ref": "#/$defs/types/scalar"
+                                                }
+                                            },
+                                            {
+                                                "type": [
+                                                    "string"
+                                                ]
+                                            }
+                                        ],
+                                        "description": "Secret used to sign messages, defaults to the \"kernel.secret\" parameter. List several to rotate it: the first one signs, all of them verify."
+                                    },
                                     "symfony_serializer": {
                                         "$ref": "#/$defs/types/object_null",
                                         "properties": {
+                                            "service": {
+                                                "$ref": "#/$defs/types/scalar",
+                                                "default": null,
+                                                "description": "Service id of the Symfony serializer behind the messenger.transport.symfony_serializer service, e.g. \"serializer.api\" for the named serializer \"api\"."
+                                            },
                                             "format": {
                                                 "$ref": "#/$defs/types/scalar",
                                                 "default": "json",
@@ -3828,6 +3888,7 @@
                                         },
                                         "additionalProperties": false,
                                         "default": {
+                                            "service": null,
                                             "format": "json",
                                             "context": []
                                         }
@@ -3836,7 +3897,9 @@
                                 "additionalProperties": false,
                                 "default": {
                                     "default_serializer": "messenger.transport.native_php_serializer",
+                                    "signing_secret": [],
                                     "symfony_serializer": {
+                                        "service": null,
                                         "format": "json",
                                         "context": []
                                     }
@@ -3856,6 +3919,11 @@
                                                     "$ref": "#/$defs/types/scalar",
                                                     "default": null,
                                                     "description": "Service id of a custom serializer to use."
+                                                },
+                                                "sign": {
+                                                    "$ref": "#/$defs/types/boolean",
+                                                    "default": false,
+                                                    "description": "Whether to sign every message sent to this transport with its trust level, and to refuse any message received from it that is unsigned, or signed as unverified when this is not a failure transport. When false, only the messages whose handlers ask for it are signed."
                                                 },
                                                 "claim_check": {
                                                     "$ref": "#/$defs/types/object_null",
@@ -3998,6 +4066,11 @@
                                 "default": true,
                                 "description": "Whether redeliveries should be rejected and retried through a new message instead of being handled directly. This mostly makes sense for AMQP, which redelivers messages that were neither acknowledged nor rejected. Disabling it avoids losing a message when the retry or the failure transport is unreachable, at the risk of a redelivery loop that blocks the queue."
                             },
+                            "identity_stamps": {
+                                "$ref": "#/$defs/types/boolean",
+                                "default": false,
+                                "description": "Adds a message id and a causation id to dispatched messages, and a correlation id at the start of each flow."
+                            },
                             "default_bus": {
                                 "$ref": "#/$defs/types/scalar",
                                 "default": null
@@ -4115,7 +4188,9 @@
                     "routing": [],
                     "serializer": {
                         "default_serializer": "messenger.transport.native_php_serializer",
+                        "signing_secret": [],
                         "symfony_serializer": {
+                            "service": null,
                             "format": "json",
                             "context": []
                         }
@@ -4124,6 +4199,7 @@
                     "failure_transport": null,
                     "stop_worker_on_signals": [],
                     "reject_redelivered_messages": true,
+                    "identity_stamps": false,
                     "default_bus": null,
                     "buses": {
                         "messenger.bus.default": {
@@ -5795,8 +5871,24 @@
                                             "description": "The user provider to load users from."
                                         },
                                         "secret": {
-                                            "$ref": "#/$defs/types/scalar",
-                                            "default": "%kernel.secret%"
+                                            "anyOf": [
+                                                {
+                                                    "$ref": "#/$defs/types/array_null",
+                                                    "items": {
+                                                        "$ref": "#/$defs/types/scalar"
+                                                    },
+                                                    "minItems": 1
+                                                },
+                                                {
+                                                    "type": [
+                                                        "string"
+                                                    ]
+                                                }
+                                            ],
+                                            "default": [
+                                                "%kernel.secret%"
+                                            ],
+                                            "description": "Secret used to sign the links. List several to rotate it: the first one signs, all of them verify."
                                         },
                                         "always_use_default_target_path": {
                                             "$ref": "#/$defs/types/boolean",
@@ -5909,6 +6001,45 @@
                                             "$ref": "#/$defs/types/scalar",
                                             "description": "The OIDC client identifier."
                                         },
+                                        "client_certificate": {
+                                            "anyOf": [
+                                                {
+                                                    "$ref": "#/$defs/types/object_null",
+                                                    "properties": {
+                                                        "certificate": {
+                                                            "$ref": "#/$defs/types/scalar",
+                                                            "description": "Path to the PEM file of the certificate."
+                                                        },
+                                                        "key": {
+                                                            "$ref": "#/$defs/types/scalar",
+                                                            "default": null,
+                                                            "description": "Path to the PEM file of the private key, when not in the certificate file."
+                                                        },
+                                                        "passphrase": {
+                                                            "$ref": "#/$defs/types/scalar",
+                                                            "default": null,
+                                                            "description": "Passphrase of the private key."
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "certificate"
+                                                    ],
+                                                    "additionalProperties": false
+                                                },
+                                                {
+                                                    "type": [
+                                                        "string"
+                                                    ]
+                                                }
+                                            ],
+                                            "description": "The TLS client certificate presented to the token and UserInfo endpoints.",
+                                            "examples": [
+                                                {
+                                                    "certificate": "%kernel.project_dir%/config/oidc/client.pem",
+                                                    "key": "%kernel.project_dir%/config/oidc/client.key"
+                                                }
+                                            ]
+                                        },
                                         "client_authentication": {
                                             "anyOf": [
                                                 {
@@ -5956,6 +6087,21 @@
                                                                             "minimum": 1,
                                                                             "default": 60,
                                                                             "description": "How long an assertion is valid, in seconds. It is built for one request and sent right away, so keep it short: it is the window a provider that does not track the \"jti\" would accept a captured assertion in."
+                                                                        },
+                                                                        "audience": {
+                                                                            "anyOf": [
+                                                                                {
+                                                                                    "enum": [
+                                                                                        "issuer",
+                                                                                        "token_endpoint"
+                                                                                    ]
+                                                                                },
+                                                                                {
+                                                                                    "$ref": "#/$defs/types/param"
+                                                                                }
+                                                                            ],
+                                                                            "default": "issuer",
+                                                                            "description": "The audience of the assertion: the issuer of the provider, or its token endpoint for a provider that refuses the issuer."
                                                                         }
                                                                     },
                                                                     "required": [
@@ -6013,6 +6159,21 @@
                                                                             "minimum": 1,
                                                                             "default": 60,
                                                                             "description": "How long an assertion is valid, in seconds. It is built for one request and sent right away, so keep it short: it is the window a provider that does not track the \"jti\" would accept a captured assertion in."
+                                                                        },
+                                                                        "audience": {
+                                                                            "anyOf": [
+                                                                                {
+                                                                                    "enum": [
+                                                                                        "issuer",
+                                                                                        "token_endpoint"
+                                                                                    ]
+                                                                                },
+                                                                                {
+                                                                                    "$ref": "#/$defs/types/param"
+                                                                                }
+                                                                            ],
+                                                                            "default": "issuer",
+                                                                            "description": "The audience of the assertion: the issuer of the provider, or its token endpoint for a provider that refuses the issuer."
                                                                         }
                                                                     },
                                                                     "required": [
@@ -6034,9 +6195,17 @@
                                                                 }
                                                             ]
                                                         },
+                                                        "tls_client_auth": {
+                                                            "$ref": "#/$defs/types/boolean",
+                                                            "description": "Authenticate with \"client_certificate\", issued by a certificate authority."
+                                                        },
+                                                        "self_signed_tls_client_auth": {
+                                                            "$ref": "#/$defs/types/boolean",
+                                                            "description": "Authenticate with \"client_certificate\", self-signed."
+                                                        },
                                                         "id": {
                                                             "$ref": "#/$defs/types/scalar",
-                                                            "description": "The id of a service implementing \"ClientAuthenticationInterface\", for a scheme Symfony does not ship, such as the \"tls_client_auth\" of RFC 8705, Section 2. The method it reports is only known once it is built, so the rules a public client cannot bend are then checked on the first request to this firewall instead of while the container compiles."
+                                                            "description": "The id of a service implementing \"ClientAuthenticationInterface\", for a scheme Symfony does not ship. The method it reports is only known once it is built, so the rules a public client cannot bend are then checked on the first request to this firewall instead of while the container compiles."
                                                         }
                                                     },
                                                     "additionalProperties": false
@@ -6061,7 +6230,7 @@
                                                     "properties": {
                                                         "key": {
                                                             "$ref": "#/$defs/types/scalar",
-                                                            "description": "JSON-encoded JWK of the private key the proofs are signed with. Nothing is registered at the provider for it: the public half travels in the header of every proof. Keep it as you keep a client secret, since what it signs is what makes a bound token usable."
+                                                            "description": "The private key the proofs are signed with, as a JSON-encoded JWK."
                                                         },
                                                         "algorithm": {
                                                             "anyOf": [
@@ -6083,7 +6252,7 @@
                                                                 }
                                                             ],
                                                             "default": "ES256",
-                                                            "description": "The signature algorithm the proofs are signed with, which must be one your provider announces in \"dpop_signing_alg_values_supported\". All asymmetric, RFC 9449, Section 4.2 excluding a shared secret, which would let whoever shares it sign a proof."
+                                                            "description": "The algorithm the proofs are signed with, among the \"dpop_signing_alg_values_supported\" of the provider."
                                                         }
                                                     },
                                                     "required": [
@@ -6097,7 +6266,7 @@
                                                     ]
                                                 }
                                             ],
-                                            "description": "Binds what the provider issues to a key this client holds, the Demonstrating Proof of Possession of RFC 9449. Every request to the provider then carries a proof signed with that key, the access token comes back bound to it and is presented under the \"DPoP\" scheme rather than \"Bearer\", and the authorization request names the key in \"dpop_jkt\" so that a stolen code cannot be exchanged by whoever does not hold it. Only configure it for a provider that announces \"dpop_signing_alg_values_supported\".",
+                                            "description": "Binds the tokens the provider issues to a key held by this client (DPoP); a token the provider did not bind is refused.",
                                             "examples": [
                                                 {
                                                     "key": "%env(OIDC_DPOP_KEY)%",
@@ -6280,12 +6449,18 @@
                                                         "path": {
                                                             "$ref": "#/$defs/types/scalar",
                                                             "default": "/oidc/backchannel-logout",
-                                                            "description": "The path where the provider posts its logout tokens. A route accepting POST is declared for it by the \"security.authenticator.oidc_login.route_loader\" service, as one is for \"check_path\"; leave the path outside of any access_control rule, as the request comes from the provider and carries no session of the end-user."
+                                                            "description": "Path where the OIDC provider posts its logout tokens."
                                                         },
                                                         "cache": {
                                                             "$ref": "#/$defs/types/scalar",
                                                             "default": "cache.app",
-                                                            "description": "The id of the PSR-6 pool remembering which provider sessions a logout token ended, so that the logins they opened are refused on their next request. It has to be shared by every server of the application, as a logout token reaches any of them and the session it names was opened by another; name your own pool when \"cache.app\" is local to one server."
+                                                            "description": "Id of the cache pool remembering the ended provider sessions, shared by every server of the application."
+                                                        },
+                                                        "lifetime": {
+                                                            "$ref": "#/$defs/types/integer",
+                                                            "minimum": 1,
+                                                            "default": 86400,
+                                                            "description": "How long an ended provider session is remembered, in seconds; at least how long a session can stay idle."
                                                         }
                                                     },
                                                     "additionalProperties": false
@@ -6299,9 +6474,10 @@
                                             "default": {
                                                 "enabled": false,
                                                 "path": "/oidc/backchannel-logout",
-                                                "cache": "cache.app"
+                                                "cache": "cache.app",
+                                                "lifetime": 86400
                                             },
-                                            "description": "Enable Back-Channel Logout 1.0: the provider pushes a logout token to this application when one of its sessions ends, and the login that session opened here is refused on the next request the browser makes, without the end-user going through any of it. Register the URL of the \"path\" below with the provider as the \"backchannel_logout_uri\" of this client, and ask it for the \"sid\" claim (\"backchannel_logout_session_required\"), which is what names the session that ended."
+                                            "description": "Accept the logout tokens the OIDC provider posts when one of its sessions ends."
                                         }
                                     },
                                     "required": [
@@ -6758,6 +6934,29 @@
                                                                             "$ref": "#/$defs/types/boolean",
                                                                             "default": true,
                                                                             "description": "When enabled (default), only keys explicitly designated for signature (via \"use\":\"sig\" or a \"key_ops\" entry containing \"sign\"/\"verify\") are accepted. When disabled, keys without any usage designation are also accepted; keys explicitly restricted to encryption are still rejected."
+                                                                        },
+                                                                        "check_issuer": {
+                                                                            "anyOf": [
+                                                                                {
+                                                                                    "$ref": "#/$defs/types/object_null",
+                                                                                    "additionalProperties": {
+                                                                                        "$ref": "#/$defs/types/string_null"
+                                                                                    }
+                                                                                },
+                                                                                {
+                                                                                    "$ref": "#/$defs/types/array_null",
+                                                                                    "items": {
+                                                                                        "$ref": "#/$defs/types/string_null"
+                                                                                    }
+                                                                                },
+                                                                                {
+                                                                                    "type": [
+                                                                                        "boolean"
+                                                                                    ]
+                                                                                }
+                                                                            ],
+                                                                            "default": null,
+                                                                            "description": "Whether the discovery document of each \"base_uri\" must announce that URL as its issuer, a trailing slash aside, so that its keys only verify the tokens of that issuer. A map from \"base_uri\" to issuer turns the check on and expects the given issuer from the listed ones instead."
                                                                         }
                                                                     },
                                                                     "required": [
@@ -7193,18 +7392,18 @@
                                                                 "PS256",
                                                                 "RS256"
                                                             ],
-                                                            "description": "The signature algorithms a proof is accepted to be signed with, announced in the \"algs\" parameter of the challenge. All asymmetric: a shared secret proves possession to whoever shares it. Another algorithm is accepted once its service is tagged \"security.access_token_handler.oidc.signature_algorithm\"."
+                                                            "description": "The algorithms a proof may be signed with, announced in the challenge."
                                                         },
                                                         "cache": {
                                                             "$ref": "#/$defs/types/scalar",
                                                             "default": "cache.app",
-                                                            "description": "The cache pool the identifier of a proof is remembered in for as long as the proof stands, so that a proof taken off the wire cannot be sent a second time (RFC 9449, Section 11.1). Instances of the same application share it, or a replay against another instance is not seen for what it is."
+                                                            "description": "The cache pool proofs are remembered in to refuse a replay, shared by all the instances of the application."
                                                         },
                                                         "proof_lifetime": {
                                                             "$ref": "#/$defs/types/integer",
                                                             "minimum": 1,
                                                             "default": 60,
-                                                            "description": "How long a proof stands, in seconds, from its \"iat\". A proof is a signature over one request being sent; a long window is a window a proof taken off the wire may be sent again in."
+                                                            "description": "How long a proof is accepted after its \"iat\", in seconds."
                                                         },
                                                         "allowed_time_drift": {
                                                             "$ref": "#/$defs/types/integer",
@@ -7232,7 +7431,7 @@
                                                 "proof_lifetime": 60,
                                                 "allowed_time_drift": 5
                                             },
-                                            "description": "Accepts the access tokens of this firewall only from a request proving possession of the key they are bound to (RFC 9449). The token is then presented under the \"DPoP\" scheme rather than under \"Bearer\", which the \"header\" extractor of this firewall reads accordingly, and a token bound to nothing is refused. The URL a proof names is compared with the one this application answers on, so a deployment behind a reverse proxy declares its trusted proxies and hosts."
+                                            "description": "Accepts only the access tokens bound to a key the request proves it holds (DPoP), presented under the \"DPoP\" scheme."
                                         }
                                     },
                                     "required": [
@@ -7294,8 +7493,24 @@
                                     "$ref": "#/$defs/types/object_null",
                                     "properties": {
                                         "secret": {
-                                            "$ref": "#/$defs/types/scalar",
-                                            "default": "%kernel.secret%"
+                                            "anyOf": [
+                                                {
+                                                    "$ref": "#/$defs/types/array_null",
+                                                    "items": {
+                                                        "$ref": "#/$defs/types/scalar"
+                                                    },
+                                                    "minItems": 1
+                                                },
+                                                {
+                                                    "type": [
+                                                        "string"
+                                                    ]
+                                                }
+                                            ],
+                                            "default": [
+                                                "%kernel.secret%"
+                                            ],
+                                            "description": "Secret used to sign the cookies. List several to rotate it: the first one signs, all of them verify."
                                         },
                                         "service": {
                                             "$ref": "#/$defs/types/scalar"

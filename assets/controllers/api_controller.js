@@ -13,6 +13,7 @@ export default class extends Controller {
 
     async send(event) {
         const { call, method, path, body } = event.params;
+        const payload = this.constructor.payloadOf(body);
         const answer = this.element.querySelector(`[data-api-answer="${call}"]`);
         const token = document.querySelector(this.tokenSelectorValue)?.value?.trim() ?? '';
 
@@ -20,12 +21,12 @@ export default class extends Controller {
         answer.textContent = `${method} ${path}\nAuthorization: Bearer ${token.slice(0, 12)}…\n\nwaiting…`;
 
         const headers = { Accept: 'application/json', Authorization: `Bearer ${token}` };
-        if (body) {
+        if (payload !== undefined) {
             headers['Content-Type'] = 'application/json';
         }
 
         try {
-            const response = await fetch(path, { method, headers, body: body || undefined });
+            const response = await fetch(path, { method, headers, body: payload });
             const text = await response.text();
             // what a refusal says is in a header: the challenge of RFC 6750 §3 names the realm, the error
             // and, for a missing scope, the scope
@@ -43,6 +44,20 @@ export default class extends Controller {
         } catch (error) {
             answer.textContent = `${method} ${path}\n\nThe request did not come back: ${error}`;
         }
+    }
+
+    /*
+     * The body that goes on the wire, from what the button carries. Stimulus types an action parameter by
+     * reading it as JSON, so the object the page writes on the button comes back as an object, and a fetch
+     * handed an object sends the string "[object Object]", which the API reads as a syntax error. What the
+     * page declares is serialised here, once, for every call that posts something.
+     */
+    static payloadOf(body) {
+        if (body === undefined || body === null || body === '') {
+            return undefined;
+        }
+
+        return typeof body === 'string' ? body : JSON.stringify(body);
     }
 
     static pretty(text) {

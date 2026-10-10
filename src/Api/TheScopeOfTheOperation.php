@@ -3,6 +3,7 @@
 namespace App\Api;
 
 use ApiPlatform\Metadata\HttpOperation;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
@@ -25,6 +26,12 @@ use Symfony\Component\Security\Http\Authorization\InsufficientScopeAccessDeniedH
  */
 final readonly class TheScopeOfTheOperation implements AccessDeniedHandlerInterface
 {
+    /**
+     * The problem type of this refusal, which is the section that defines it: a client reads the
+     * challenge, and whoever reads the body is sent to what the challenge means.
+     */
+    private const string PROBLEM_TYPE = 'https://datatracker.ietf.org/doc/html/rfc6750#section-3.1';
+
     private InsufficientScopeAccessDeniedHandler $insufficientScope;
 
     public function __construct(string $realm)
@@ -46,7 +53,38 @@ final readonly class TheScopeOfTheOperation implements AccessDeniedHandlerInterf
 
         $denial = new AccessDeniedException($accessDeniedException->getMessage(), $accessDeniedException);
         $denial->setAttributes($attributes);
+        $challenge = $this->insufficientScope->handle($request, $denial);
+        if (null === $challenge) {
+            return null;
+        }
 
-        return $this->insufficientScope->handle($request, $denial);
+        return $this->withTheDocumentOfTheRefusal($challenge, ScopesOfTheOperation::of($operation));
+    }
+
+    /**
+     * The same refusal, with a body in the media type the other refusals of this API answer in
+     * (RFC 9457): the challenge is what a client acts on, and a page, a log or a reader of this
+     * demonstration gets a document saying the same thing rather than a 403 that says nothing.
+     *
+     * The scope it names is read from the operation, as the challenge was, and not from the header
+     * this just wrote: two readings of one place, never a parse of our own answer.
+     *
+     * @param list<string> $scopes
+     */
+    private function withTheDocumentOfTheRefusal(Response $challenge, array $scopes): Response
+    {
+        $document = new JsonResponse([
+            'type' => self::PROBLEM_TYPE,
+            'title' => 'insufficient_scope',
+            'status' => Response::HTTP_FORBIDDEN,
+            'detail' => sprintf(
+                'This operation requires the scope "%s", which the access token was not granted.',
+                implode(' ', $scopes),
+            ),
+        ], Response::HTTP_FORBIDDEN);
+        $document->headers->set('Content-Type', 'application/problem+json');
+        $document->headers->set('WWW-Authenticate', $challenge->headers->all('WWW-Authenticate'));
+
+        return $document;
     }
 }

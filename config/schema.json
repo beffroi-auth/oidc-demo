@@ -2401,6 +2401,11 @@
                                         "$ref": "#/$defs/types/integer",
                                         "default": 0,
                                         "description": "Seconds to wait between 2 session metadata updates."
+                                    },
+                                    "isolate_attributes": {
+                                        "$ref": "#/$defs/types/boolean",
+                                        "default": false,
+                                        "description": "Whether to deep-clone the values read from and passed to session attributes, so that only values passed to set() are saved."
                                     }
                                 },
                                 "additionalProperties": false
@@ -2417,7 +2422,8 @@
                             "cookie_secure": "auto",
                             "cookie_httponly": true,
                             "cookie_samesite": "lax",
-                            "metadata_update_threshold": 0
+                            "metadata_update_threshold": 0,
+                            "isolate_attributes": false
                         },
                         "description": "Session configuration"
                     },
@@ -2590,6 +2596,51 @@
                             "max_host_connections": {
                                 "$ref": "#/$defs/types/integer",
                                 "description": "The maximum number of connections to a single host."
+                            },
+                            "recorder": {
+                                "anyOf": [
+                                    {
+                                        "$ref": "#/$defs/types/object_null",
+                                        "properties": {
+                                            "enabled": {
+                                                "$ref": "#/$defs/types/boolean",
+                                                "default": false
+                                            },
+                                            "redactor": {
+                                                "$ref": "#/$defs/types/scalar",
+                                                "default": null,
+                                                "description": "Service id of a RedactorInterface; when set, \"redact\" and \"redact_except\" are ignored."
+                                            },
+                                            "redact": {
+                                                "$ref": "#/$defs/types/array_null",
+                                                "items": {
+                                                    "$ref": "#/$defs/types/scalar"
+                                                },
+                                                "description": "Header, query-string, form and JSON field names masked in recorded files, in addition to the built-in ones."
+                                            },
+                                            "redact_except": {
+                                                "$ref": "#/$defs/types/array_null",
+                                                "items": {
+                                                    "$ref": "#/$defs/types/scalar"
+                                                },
+                                                "description": "Names never masked, removed from the built-in lists."
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": [
+                                            "boolean"
+                                        ]
+                                    }
+                                ],
+                                "default": {
+                                    "enabled": false,
+                                    "redactor": null,
+                                    "redact": [],
+                                    "redact_except": []
+                                },
+                                "description": "Record HTTP exchanges into HAR files and replay them in tests (see RecorderHttpClient)."
                             },
                             "default_options": {
                                 "$ref": "#/$defs/types/object_null",
@@ -3242,6 +3293,12 @@
                 ],
                 "default": {
                     "enabled": true,
+                    "recorder": {
+                        "enabled": false,
+                        "redactor": null,
+                        "redact": [],
+                        "redact_except": []
+                    },
                     "scoped_clients": []
                 }
             },
@@ -4066,6 +4123,20 @@
                                 "default": true,
                                 "description": "Whether redeliveries should be rejected and retried through a new message instead of being handled directly. This mostly makes sense for AMQP, which redelivers messages that were neither acknowledged nor rejected. Disabling it avoids losing a message when the retry or the failure transport is unreachable, at the risk of a redelivery loop that blocks the queue."
                             },
+                            "deduplication": {
+                                "$ref": "#/$defs/types/object_null",
+                                "properties": {
+                                    "lock_factory": {
+                                        "$ref": "#/$defs/types/scalar",
+                                        "default": null,
+                                        "description": "The service ID of the lock factory used to deduplicate messages, \"lock.factory\" when not set."
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "default": {
+                                    "lock_factory": null
+                                }
+                            },
                             "identity_stamps": {
                                 "$ref": "#/$defs/types/boolean",
                                 "default": false,
@@ -4151,6 +4222,27 @@
                                                     ]
                                                 }
                                             ]
+                                        },
+                                        "messages": {
+                                            "anyOf": [
+                                                {
+                                                    "$ref": "#/$defs/types/array_null",
+                                                    "items": {
+                                                        "$ref": "#/$defs/types/scalar"
+                                                    }
+                                                },
+                                                {
+                                                    "type": [
+                                                        "string"
+                                                    ]
+                                                }
+                                            ],
+                                            "description": "The classes or interfaces of the messages the application can dispatch on this bus, any message when empty."
+                                        },
+                                        "unwrap_exceptions": {
+                                            "$ref": "#/$defs/types/boolean",
+                                            "default": false,
+                                            "description": "Whether the application gets the exception of the failing handler instead of a HandlerFailedException when it dispatches a message."
                                         }
                                     },
                                     "additionalProperties": false,
@@ -4160,7 +4252,9 @@
                                             "allow_no_handlers": false,
                                             "allow_no_senders": true
                                         },
-                                        "middleware": []
+                                        "middleware": [],
+                                        "messages": [],
+                                        "unwrap_exceptions": false
                                     }
                                 },
                                 "default": {
@@ -4170,7 +4264,9 @@
                                             "allow_no_handlers": false,
                                             "allow_no_senders": true
                                         },
-                                        "middleware": []
+                                        "middleware": [],
+                                        "messages": [],
+                                        "unwrap_exceptions": false
                                     }
                                 }
                             }
@@ -4199,6 +4295,9 @@
                     "failure_transport": null,
                     "stop_worker_on_signals": [],
                     "reject_redelivered_messages": true,
+                    "deduplication": {
+                        "lock_factory": null
+                    },
                     "identity_stamps": false,
                     "default_bus": null,
                     "buses": {
@@ -4208,7 +4307,9 @@
                                 "allow_no_handlers": false,
                                 "allow_no_senders": true
                             },
-                            "middleware": []
+                            "middleware": [],
+                            "messages": [],
+                            "unwrap_exceptions": false
                         }
                     }
                 }

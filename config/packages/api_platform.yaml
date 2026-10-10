@@ -1,0 +1,31 @@
+# The API of this demonstration (beffroi-php/beffroi#556), served under /api/v1 by API Platform and
+# reached with an access token of the provider and nothing else: the firewall of that path is what
+# decides whether a request gets in (config/packages/security.yaml), and the scope each operation needs
+# is written on the operation itself (src/ApiResource/).
+#
+# It is stateless and says so: no session is started, no cookie is read, and nothing of a request
+# survives it. Whoever asks is whoever the token names, which is the whole point of a resource server.
+api_platform:
+    title: 'Invoices of the demonstration'
+    description: 'The invoices of whoever the access token names, served behind the introspection endpoint of the provider (RFC 7662).'
+    version: 1.0.0
+
+    # Where the resources are, and nowhere else: this application has no Doctrine entity and this API
+    # adds none, so the directory API Platform maps is the one holding the classes it serves.
+    mapping:
+        paths: ['%kernel.project_dir%/src/ApiResource']
+
+    # JSON-LD, which carries the shape of the API, and plain JSON, which is what a client that wants an
+    # object and no vocabulary asks for. The documentation is served as both, plus the page.
+    formats:
+        jsonld: ['application/ld+json']
+        json: ['application/json']
+    docs_formats:
+        jsonld: ['application/ld+json']
+        json: ['application/json']
+        html: ['text/html']
+
+    defaults:
+        stateless: true
+        cache_headers:
+            vary: ['Content-Type', 'Authorization', 'Origin']

@@ -357,6 +357,9 @@ security:
         # without one on purpose
         - { path: '^/c/[a-z-]+/profile$', roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/profile, roles: ROLE_USER }
+        # the page that calls the API with the access token of this session shows that token, so it is
+        # behind the firewall that obtained it and nowhere else
+        - { path: ^/api-calls, roles: ROLE_USER }
         # what an API says of itself is public: the entrypoint, the documentation and the contexts the
         # JSON-LD answers point at say which operations exist and what they need, and nothing of
         # anybody's invoices is in them. The data of the API is the rule below, like every other /api/

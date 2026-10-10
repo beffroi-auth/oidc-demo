@@ -11,11 +11,14 @@ api_platform:
         The invoices of whoever the access token names, served behind the introspection endpoint of the
         provider (RFC 7662). Every operation needs a token and says which scope that token has to carry.
 
-        The token to present is one the provider issued to the client this API introspects as: it describes
-        a token to the client it was issued to and to no other (RFC 7662 section 2.2), so a token obtained
-        for another client of the same provider, a rung of the ladder under /c/ for instance, is reported
-        inactive here and refused with a 401. The /profile page of this demonstration shows one that works,
-        and `castor demo --api` of the provider's repository plays the whole thing from the command line.
+        The token to present is any one this demonstration handed you: the /profile page of its main
+        firewall shows one, and so does the page of each rung of the ladder under /c/. The provider
+        describes a token to the client it was issued to and to no other (RFC 7662 section 2.2), so this
+        API asks it as each client whose secret the demonstration holds, and the first answer that
+        describes the token is the one its firewall reads. The two rungs that prove a key instead of
+        sharing a secret, /c/key/ and /c/fapi/, are the exception: their tokens are refused here, because
+        asking about them would mean signing an assertion. `castor demo --api` of the provider's
+        repository plays the whole thing from the command line.
     version: 1.0.0
 
     # Where the resources are, and nowhere else: this application has no Doctrine entity and this API
@@ -38,11 +41,10 @@ api_platform:
         html: ['text/html']
 
     # What the "Authorize" button of the documentation asks for: the bearer token of RFC 6750 section 2.1,
-    # the one scheme this API accepts. Whoever reads the page pastes the access token the provider issued
-    # and the page then sends it on every operation, as a client would. The flow of an authorization code
-    # is not offered, and could not be: the documentation runs in a browser, so a client it signed in as
-    # would be a public client of its own, and the provider describes a token to the client it was issued
-    # to (RFC 7662 section 2.2), which is the one this API introspects as and not that one.
+    # the one scheme this API accepts. Whoever reads the page pastes an access token the demonstration
+    # handed them and the page then sends it on every operation, as a client would. The flow of an
+    # authorization code is not offered in the page: it runs in a browser, so the client it signed in as
+    # would hold its secret there, which is not what a page of a demonstration teaches.
     swagger:
         http_auth:
             bearer:

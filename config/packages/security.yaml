@@ -39,9 +39,20 @@ security:
                 realm: '%app.api.realm%'
                 token_handler:
                     oauth2:
-                        http_client: introspection.client
+                        # not the scoped client of /api/me, which asks as one client: this one asks as each
+                        # client of the demonstration whose secret this application holds, so a token any
+                        # page of it handed out is described rather than reported inactive
+                        # (src/Api/WhicheverClientKnowsTheToken.php)
+                        http_client: App\Api\WhicheverClientKnowsTheToken
                         issuer: '%env(OIDC_PROVIDER_URI)%'
-                        audience: '%env(OIDC_CLIENT_ID)%'
+                        # the identifiers of those same clients, one of which the "aud" of the answer names
+                        # (RFC 7662 section 2.2): a token addressed to a resource of somebody else is not
+                        # this API's to honour, whichever client it was described to
+                        audience:
+                            - '%env(OIDC_CLIENT_ID)%'
+                            - '%env(DEMO_OPAQUE_CLIENT_ID)%'
+                            - '%env(DEMO_FORM_POST_CLIENT_ID)%'
+                            - '%env(DEMO_RAR_CLIENT_ID)%'
                         cache:
                             id: cache.app
                             ttl: '%app.api.introspection_cache_ttl%'

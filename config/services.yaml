@@ -97,6 +97,20 @@ services:
         arguments:
             $pool: '@cache.app'
 
+    # Which clients of this demonstration the API may ask the provider about (RFC 7662 section 2.2): every
+    # one whose secret this application holds, in the order they are asked. The main firewall and the first
+    # rung share one registration, the opaque rung has its own, and the two rungs that prove a key instead
+    # of sharing a secret (demo-key, demo-fapi, private_key_jwt) are absent: introspecting their tokens
+    # would mean signing an assertion, which an HTTP client does not do, so their tokens stay refused.
+    App\Api\WhicheverClientKnowsTheToken:
+        arguments:
+            $client: '@introspection.client'
+            $clients:
+                - { client_id: '%env(OIDC_CLIENT_ID)%', secret: '%env(OIDC_CLIENT_SECRET)%' }
+                - { client_id: '%env(DEMO_OPAQUE_CLIENT_ID)%', secret: '%env(DEMO_OPAQUE_SECRET)%' }
+                - { client_id: '%env(DEMO_FORM_POST_CLIENT_ID)%', secret: '%env(DEMO_FORM_POST_SECRET)%' }
+                - { client_id: '%env(DEMO_RAR_CLIENT_ID)%', secret: '%env(DEMO_RAR_SECRET)%' }
+
     App\Api\TheScopeOfTheOperation:
         arguments:
             $realm: '%app.api.realm%'

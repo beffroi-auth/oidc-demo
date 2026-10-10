@@ -5,6 +5,9 @@
 {% block topbar_nav %}
     <span class="who">{{ app.user.userIdentifier }}</span>
     <a href="{{ path('app_home') }}">The ladder</a>
+    {# the pages of the "main" firewall, which holds a session of its own: following one of them from here
+       signs in there, and the token of this rung works on the API all the same (/api-calls) #}
+    <a href="{{ path('app_api_calls') }}">API calls</a>
     <form class="logout" method="post" action="{{ logout_path(definition.firewall) }}">
         <button class="button" type="submit">Sign out</button>
     </form>

@@ -1,0 +1,47 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}API calls{% endblock %}
+
+{# The page where the access token of this session calls the API of this application: the calls are the
+   ones src/Api/Console/CallsOfThePage.php declares, the browser makes them with the token, and the answer
+   is shown as it came back. The data-* attributes are what the Stimulus controller reads and what the walk
+   of the provider replays (castor demo --api). #}
+{% block body %}
+    <h1>API calls</h1>
+    <p class="lead">The access token this session holds, used against <code>/api/v1</code> of this very
+        application, from your browser. The API asks the provider what the token is at every request
+        (RFC 7662) and keeps the answer a few seconds.</p>
+
+    <div class="card ok">
+        <h2>The token the calls carry</h2>
+        <p class="muted">Obtained by the <code>main</code> firewall for the client <code>{{ client_id }}</code>.
+            Any other token this demonstration handed out works as well, from <a href="{{ path('app_home') }}">a rung of the ladder</a>
+            for instance: paste it here and the calls below use it.</p>
+        <textarea id="api-token" class="token" rows="3" spellcheck="false" aria-label="The access token the calls carry">{{ access_token }}</textarea>
+        <p class="muted">It expires ten minutes after it was issued. Sign in again to get another one.</p>
+    </div>
+
+    <h2>What this token may ask for</h2>
+    <div data-controller="api" data-api-token-selector-value="#api-token">
+        {% for call in calls %}
+            <div class="card call">
+                <h2>{{ call.label }}</h2>
+                <p><code>{{ call.method }} {{ call.path }}</code> &middot; scope <code>{{ call.scope }}</code></p>
+                <p class="muted">{{ call.says }}</p>
+                <button class="button"
+                        type="button"
+                        data-action="api#send"
+                        data-api-call-param="{{ call.key }}"
+                        data-api-method-param="{{ call.method }}"
+                        data-api-path-param="{{ call.path }}"
+                        data-api-body-param="{{ call.body is null ? '' : call.body|json_encode }}"
+                >Send it</button>
+                <pre class="answer" data-api-answer="{{ call.key }}" hidden></pre>
+                <details>
+                    <summary>The same call on a command line</summary>
+                    <pre>{{ call.asCurl(origin) }}</pre>
+                </details>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

@@ -15,10 +15,16 @@
             <nav>
                 {# the ladder pages know which firewall they belong to and say so themselves #}
                 {% block topbar_nav %}
+                    {# The pages of the demonstration are listed whether or not a session is open: each one
+                       is behind the firewall it belongs to, so following it when there is no session is how
+                       a sign-in starts, which is what this demonstration is for. "Vault" asks for a
+                       phishing-resistant one and says so by sending the browser back for a passkey. #}
+                    {% if app.user %}<span class="who">{{ app.user.userIdentifier }}</span>{% endif %}
+                    <a href="{{ path('app_profile') }}">Profile</a>
+                    <a href="{{ path('app_api_calls') }}">API calls</a>
+                    <a href="{{ path('app_vault') }}">Vault</a>
+                    <a href="{{ path('app_home') }}">The ladder</a>
                     {% if app.user %}
-                        <span class="who">{{ app.user.userIdentifier }}</span>
-                        <a href="{{ path('app_profile') }}">Profile</a>
-                        <a href="{{ path('app_vault') }}">Vault</a>
                         {# A logout is posted: as a link, Turbo prefetches it on hover and fires it on
                            its own. The form is written by hand for as long as the installed twig-bridge
                            has no "logout_form()" to build it. #}
@@ -26,7 +32,7 @@
                             <button class="button" type="submit">Sign out</button>
                         </form>
                     {% else %}
-                        <a class="button" href="{{ path('app_home') }}">Choose a client</a>
+                        <a class="button" href="{{ path('app_profile') }}">Sign in</a>
                     {% endif %}
                 {% endblock %}
             </nav>

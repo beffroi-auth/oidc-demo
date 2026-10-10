@@ -104,3 +104,21 @@ footer {
     font-size: .85rem;
     border-top: 1px solid var(--border);
 }
+
+/* the page that calls the API: the token it carries, and the answer of each call as it came back */
+textarea.token {
+    width: 100%;
+    background: #10131b;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: .5rem;
+    padding: .75rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: .8rem;
+    word-break: break-all;
+}
+
+.card.call h2 { font-size: 1rem; }
+.card.call .button { border: 0; cursor: pointer; font: inherit; font-weight: 600; }
+.card.call pre.answer { white-space: pre-wrap; word-break: break-word; margin-bottom: .5rem; }
+.card.call details summary { color: var(--muted); font-size: .9rem; cursor: pointer; }

@@ -8,7 +8,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Http\Authorization\AccessDeniedHandlerInterface;
 use Symfony\Component\Security\Http\Authorization\InsufficientScopeAccessDeniedHandler;
-use Symfony\Component\Security\Http\Authorization\OAuth2ScopeVoter;
 
 /**
  * What answers a request this API refused for a scope it was not granted: the 403 and the
@@ -19,17 +18,13 @@ use Symfony\Component\Security\Http\Authorization\OAuth2ScopeVoter;
  * otherwise: the "security" of an operation is an expression it evaluates, and what comes back is a
  * boolean, so the denial carries no attribute and nothing names the scope any more.
  *
- * The scope is therefore read back where it is written, the operation itself, which is also where the
- * documentation of the API shows it. One place: an operation that names its scope gets the challenge of
- * that scope, and a denial that has nothing to do with a scope is left alone.
+ * The scope is therefore read back where it is written, the operation itself (ScopesOfTheOperation),
+ * which is also where the documentation of the API reads it (ScopesInTheDocument). One place: an
+ * operation that names its scope gets the challenge of that scope, and a denial that has nothing to do
+ * with a scope is left alone.
  */
 final readonly class TheScopeOfTheOperation implements AccessDeniedHandlerInterface
 {
-    /**
-     * The attributes of the OAuth2 scope voter, as an expression of an operation writes them.
-     */
-    private const string ATTRIBUTE_PATTERN = '/OAUTH2_SCOPE\([^)]*\)/';
-
     private InsufficientScopeAccessDeniedHandler $insufficientScope;
 
     public function __construct(string $realm)
@@ -44,17 +39,13 @@ final readonly class TheScopeOfTheOperation implements AccessDeniedHandlerInterf
             return null;
         }
 
-        if (0 === (int) preg_match_all(self::ATTRIBUTE_PATTERN, (string) $operation->getSecurity(), $attributes)) {
-            return null;
-        }
-
-        $scopes = array_filter(array_map(OAuth2ScopeVoter::getRequiredScopes(...), $attributes[0]));
-        if ([] === $scopes) {
+        $attributes = ScopesOfTheOperation::attributesOf($operation);
+        if ([] === $attributes) {
             return null;
         }
 
         $denial = new AccessDeniedException($accessDeniedException->getMessage(), $accessDeniedException);
-        $denial->setAttributes($attributes[0]);
+        $denial->setAttributes($attributes);
 
         return $this->insufficientScope->handle($request, $denial);
     }

@@ -1,0 +1,7 @@
+# /api is the resource server of the six hand-written routes of this demonstration, each behind a
+# firewall of its own; /api/v1 is this API, behind a firewall of its own too. One prefix for one
+# firewall, so that the pattern of a firewall and the routes it answers for cannot drift apart.
+api_platform:
+    resource: .
+    type: api_platform
+    prefix: /api/v1

@@ -137,6 +137,1600 @@
             }
         },
         "nodes": {
+            "api_platform": {
+                "$ref": "#/$defs/types/object_null",
+                "properties": {
+                    "title": {
+                        "$ref": "#/$defs/types/scalar",
+                        "default": "",
+                        "description": "The title of the API."
+                    },
+                    "description": {
+                        "$ref": "#/$defs/types/scalar",
+                        "default": "",
+                        "description": "The description of the API."
+                    },
+                    "version": {
+                        "$ref": "#/$defs/types/scalar",
+                        "default": "0.0.0",
+                        "description": "The version of the API."
+                    },
+                    "show_webby": {
+                        "$ref": "#/$defs/types/boolean",
+                        "default": true,
+                        "description": "If true, show Webby on the documentation page"
+                    },
+                    "use_symfony_listeners": {
+                        "$ref": "#/$defs/types/boolean",
+                        "default": false,
+                        "description": "Uses Symfony event listeners instead of the ApiPlatform\\Symfony\\Controller\\MainController."
+                    },
+                    "name_converter": {
+                        "$ref": "#/$defs/types/scalar",
+                        "default": null,
+                        "description": "Specify a name converter to use."
+                    },
+                    "asset_package": {
+                        "$ref": "#/$defs/types/scalar",
+                        "default": null,
+                        "description": "Specify an asset package name to use."
+                    },
+                    "path_segment_name_generator": {
+                        "$ref": "#/$defs/types/scalar",
+                        "default": "api_platform.metadata.path_segment_name_generator.underscore",
+                        "description": "Specify a path name generator to use."
+                    },
+                    "inflector": {
+                        "$ref": "#/$defs/types/scalar",
+                        "default": "api_platform.metadata.inflector",
+                        "description": "Specify an inflector to use."
+                    },
+                    "validator": {
+                        "$ref": "#/$defs/types/object_null",
+                        "properties": {
+                            "serialize_payload_fields": {
+                                "$ref": "#/$defs/types/variable",
+                                "default": [],
+                                "description": "Set to null to serialize all payload fields when a validation error is thrown, or set the fields you want to include explicitly."
+                            },
+                            "query_parameter_validation": {
+                                "$ref": "#/$defs/types/boolean",
+                                "default": true,
+                                "deprecated": true,
+                                "description": "Deprecated since api-platform/symfony 4.2: The \"query_parameter_validation\" configuration is deprecated and will be removed in API Platform 5.0."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "default": {
+                            "serialize_payload_fields": [],
+                            "query_parameter_validation": true
+                        }
+                    },
+                    "jsonapi": {
+                        "$ref": "#/$defs/types/object_null",
+                        "properties": {
+                            "use_iri_as_id": {
+                                "$ref": "#/$defs/types/boolean_null",
+                                "default": null,
+                                "description": "Set to false to use entity identifiers instead of IRIs as the \"id\" field in JSON:API responses. Defaults to true; this default will change to false in API Platform 5.0."
+                            },
+                            "allow_client_generated_id": {
+                                "$ref": "#/$defs/types/boolean",
+                                "default": false,
+                                "description": "Allow client-generated IDs on JSON:API POST per https://jsonapi.org/format/#crud-creating-client-ids. Off by default to prevent id spoofing on public endpoints."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "default": {
+                            "use_iri_as_id": null,
+                            "allow_client_generated_id": false
+                        }
+                    },
+                    "eager_loading": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/$defs/types/object_null",
+                                "properties": {
+                                    "enabled": {
+                                        "$ref": "#/$defs/types/boolean",
+                                        "default": true
+                                    },
+                                    "fetch_partial": {
+                                        "$ref": "#/$defs/types/boolean",
+                                        "default": false,
+                                        "description": "Fetch only partial data according to serialization groups. If enabled, Doctrine ORM entities will not work as expected if any of the other fields are used."
+                                    },
+                                    "max_joins": {
+                                        "$ref": "#/$defs/types/integer",
+                                        "default": 30,
+                                        "description": "Max number of joined relations before EagerLoading throws a RuntimeException"
+                                    },
+                                    "force_eager": {
+                                        "$ref": "#/$defs/types/boolean",
+                                        "default": true,
+                                        "description": "Force join on every relation. If disabled, it will only join relations having the EAGER fetch mode."
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            {
+                                "type": [
+                                    "boolean"
+                                ]
+                            }
+                        ],
+                        "default": {
+                            "enabled": true,
+                            "fetch_partial": false,
+                            "max_joins": 30,
+                            "force_eager": true
+                        }
+                    },
+                    "handle_symfony_errors": {
+                        "$ref": "#/$defs/types/boolean",
+                        "default": false,
+                        "description": "Allows to handle symfony exceptions."
+                    },
+                    "enable_swagger": {
+                        "$ref": "#/$defs/types/boolean",
+                        "default": true,
+                        "description": "Enable the Swagger documentation and export."
+                    },
+                    "enable_json_streamer": {
+                        "$ref": "#/$defs/types/boolean",
+                        "default": false,
+                        "description": "Enable json streamer."
+                    },
+                    "enable_swagger_ui": {
+                        "$ref": "#/$defs/types/boolean",
+                        "default": true,
+                        "description": "Enable Swagger UI"
+                    },
+                    "enable_re_doc": {
+                        "$ref": "#/$defs/types/boolean",
+                        "default": true,
+                        "description": "Enable ReDoc"
+                    },
+                    "enable_scalar": {
+                        "$ref": "#/$defs/types/boolean",
+                        "default": true,
+                        "description": "Enable Scalar API Reference"
+                    },
+                    "enable_entrypoint": {
+                        "$ref": "#/$defs/types/boolean",
+                        "default": true,
+                        "description": "Enable the entrypoint"
+                    },
+                    "enable_docs": {
+                        "$ref": "#/$defs/types/boolean",
+                        "default": true,
+                        "description": "Enable the docs"
+                    },
+                    "enable_head_request_optimization": {
+                        "$ref": "#/$defs/types/boolean",
+                        "default": true,
+                        "description": "Skip response body construction on HEAD requests so collections are not iterated. Disable to process HEAD identically to GET."
+                    },
+                    "enable_profiler": {
+                        "$ref": "#/$defs/types/boolean",
+                        "default": true,
+                        "description": "Enable the data collector and the WebProfilerBundle integration."
+                    },
+                    "enable_phpdoc_parser": {
+                        "$ref": "#/$defs/types/boolean",
+                        "default": true,
+                        "description": "Enable resource metadata collector using PHPStan PhpDocParser."
+                    },
+                    "enable_link_security": {
+                        "$ref": "#/$defs/types/boolean",
+                        "default": true,
+                        "description": "Deprecated since api-platform/symfony 4.2: The \"enable_link_security\" configuration is deprecated, this option is always enabled and will be removed in API Platform 5.0.\n\nEnable security for Links (sub resources).",
+                        "deprecated": true
+                    },
+                    "collection": {
+                        "$ref": "#/$defs/types/object_null",
+                        "properties": {
+                            "exists_parameter_name": {
+                                "$ref": "#/$defs/types/scalar",
+                                "default": "exists",
+                                "description": "The name of the query parameter to filter on nullable field values."
+                            },
+                            "order": {
+                                "$ref": "#/$defs/types/scalar",
+                                "default": "ASC",
+                                "description": "The default order of results."
+                            },
+                            "order_parameter_name": {
+                                "$ref": "#/$defs/types/scalar",
+                                "default": "order",
+                                "description": "The name of the query parameter to order results."
+                            },
+                            "order_nulls_comparison": {
+                                "anyOf": [
+                                    {
+                                        "enum": [
+                                            "nulls_smallest",
+                                            "nulls_largest",
+                                            "nulls_always_first",
+                                            "nulls_always_last",
+                                            null
+                                        ]
+                                    },
+                                    {
+                                        "$ref": "#/$defs/types/param"
+                                    }
+                                ],
+                                "default": null,
+                                "description": "The nulls comparison strategy."
+                            },
+                            "pagination": {
+                                "anyOf": [
+                                    {
+                                        "$ref": "#/$defs/types/object_null",
+                                        "properties": {
+                                            "enabled": {
+                                                "$ref": "#/$defs/types/boolean",
+                                                "default": true
+                                            },
+                                            "page_parameter_name": {
+                                                "$ref": "#/$defs/types/scalar",
+                                                "default": "page",
+                                                "description": "The default name of the parameter handling the page number."
+                                            },
+                                            "enabled_parameter_name": {
+                                                "$ref": "#/$defs/types/scalar",
+                                                "default": "pagination",
+                                                "description": "The name of the query parameter to enable or disable pagination."
+                                            },
+                                            "items_per_page_parameter_name": {
+                                                "$ref": "#/$defs/types/scalar",
+                                                "default": "itemsPerPage",
+                                                "description": "The name of the query parameter to set the number of items per page."
+                                            },
+                                            "partial_parameter_name": {
+                                                "$ref": "#/$defs/types/scalar",
+                                                "default": "partial",
+                                                "description": "The name of the query parameter to enable or disable partial pagination."
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": [
+                                            "boolean"
+                                        ]
+                                    }
+                                ],
+                                "default": {
+                                    "enabled": true,
+                                    "page_parameter_name": "page",
+                                    "enabled_parameter_name": "pagination",
+                                    "items_per_page_parameter_name": "itemsPerPage",
+                                    "partial_parameter_name": "partial"
+                                }
+                            }
+                        },
+                        "additionalProperties": false,
+                        "default": {
+                            "exists_parameter_name": "exists",
+                            "order": "ASC",
+                            "order_parameter_name": "order",
+                            "order_nulls_comparison": null,
+                            "pagination": {
+                                "enabled": true,
+                                "page_parameter_name": "page",
+                                "enabled_parameter_name": "pagination",
+                                "items_per_page_parameter_name": "itemsPerPage",
+                                "partial_parameter_name": "partial"
+                            }
+                        }
+                    },
+                    "mapping": {
+                        "$ref": "#/$defs/types/object_null",
+                        "properties": {
+                            "imports": {
+                                "$ref": "#/$defs/types/array_null",
+                                "items": {
+                                    "$ref": "#/$defs/types/scalar"
+                                }
+                            },
+                            "paths": {
+                                "$ref": "#/$defs/types/array_null",
+                                "items": {
+                                    "$ref": "#/$defs/types/scalar"
+                                }
+                            }
+                        },
+                        "additionalProperties": false,
+                        "default": {
+                            "imports": [],
+                            "paths": []
+                        }
+                    },
+                    "resource_class_directories": {
+                        "$ref": "#/$defs/types/array_null",
+                        "items": {
+                            "$ref": "#/$defs/types/scalar"
+                        },
+                        "deprecated": true,
+                        "description": "Deprecated since api-platform/symfony 4.1: The \"resource_class_directories\" configuration is deprecated, classes using #[ApiResource] attribute are autoconfigured by the dependency injection container."
+                    },
+                    "serializer": {
+                        "$ref": "#/$defs/types/object_null",
+                        "properties": {
+                            "hydra_prefix": {
+                                "$ref": "#/$defs/types/boolean",
+                                "default": false,
+                                "description": "Use the \"hydra:\" prefix."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "default": {
+                            "hydra_prefix": false
+                        }
+                    },
+                    "doctrine": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/$defs/types/object_null",
+                                "properties": {
+                                    "enabled": {
+                                        "$ref": "#/$defs/types/boolean",
+                                        "default": true
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            {
+                                "type": [
+                                    "boolean"
+                                ]
+                            }
+                        ],
+                        "default": {
+                            "enabled": true
+                        }
+                    },
+                    "doctrine_mongodb_odm": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/$defs/types/object_null",
+                                "properties": {
+                                    "enabled": {
+                                        "$ref": "#/$defs/types/boolean",
+                                        "default": false
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            {
+                                "type": [
+                                    "boolean"
+                                ]
+                            }
+                        ],
+                        "default": {
+                            "enabled": false
+                        }
+                    },
+                    "oauth": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/$defs/types/object_null",
+                                "properties": {
+                                    "enabled": {
+                                        "$ref": "#/$defs/types/boolean",
+                                        "default": false
+                                    },
+                                    "clientId": {
+                                        "$ref": "#/$defs/types/scalar",
+                                        "default": "",
+                                        "description": "The oauth client id."
+                                    },
+                                    "clientSecret": {
+                                        "$ref": "#/$defs/types/scalar",
+                                        "default": "",
+                                        "description": "The OAuth client secret. Never use this parameter in your production environment. It exposes crucial security information. This feature is intended for dev/test environments only. Enable \"oauth.pkce\" instead"
+                                    },
+                                    "pkce": {
+                                        "$ref": "#/$defs/types/boolean",
+                                        "default": false,
+                                        "description": "Enable the oauth PKCE."
+                                    },
+                                    "type": {
+                                        "$ref": "#/$defs/types/scalar",
+                                        "default": "oauth2",
+                                        "description": "The oauth type."
+                                    },
+                                    "flow": {
+                                        "$ref": "#/$defs/types/scalar",
+                                        "default": "application",
+                                        "description": "The oauth flow grant type."
+                                    },
+                                    "tokenUrl": {
+                                        "$ref": "#/$defs/types/scalar",
+                                        "default": "",
+                                        "description": "The oauth token url."
+                                    },
+                                    "authorizationUrl": {
+                                        "$ref": "#/$defs/types/scalar",
+                                        "default": "",
+                                        "description": "The oauth authentication url."
+                                    },
+                                    "refreshUrl": {
+                                        "$ref": "#/$defs/types/scalar",
+                                        "default": "",
+                                        "description": "The oauth refresh url."
+                                    },
+                                    "scopes": {
+                                        "$ref": "#/$defs/types/array_null",
+                                        "items": {
+                                            "$ref": "#/$defs/types/scalar"
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            {
+                                "type": [
+                                    "boolean"
+                                ]
+                            }
+                        ],
+                        "default": {
+                            "enabled": false,
+                            "clientId": "",
+                            "clientSecret": "",
+                            "pkce": false,
+                            "type": "oauth2",
+                            "flow": "application",
+                            "tokenUrl": "",
+                            "authorizationUrl": "",
+                            "refreshUrl": "",
+                            "scopes": []
+                        }
+                    },
+                    "graphql": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/$defs/types/object_null",
+                                "properties": {
+                                    "enabled": {
+                                        "$ref": "#/$defs/types/boolean",
+                                        "default": false
+                                    },
+                                    "default_ide": {
+                                        "$ref": "#/$defs/types/scalar",
+                                        "default": "graphiql"
+                                    },
+                                    "graphiql": {
+                                        "anyOf": [
+                                            {
+                                                "$ref": "#/$defs/types/object_null",
+                                                "properties": {
+                                                    "enabled": {
+                                                        "$ref": "#/$defs/types/boolean",
+                                                        "default": false
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            },
+                                            {
+                                                "type": [
+                                                    "boolean"
+                                                ]
+                                            }
+                                        ],
+                                        "default": {
+                                            "enabled": false
+                                        }
+                                    },
+                                    "introspection": {
+                                        "anyOf": [
+                                            {
+                                                "$ref": "#/$defs/types/object_null",
+                                                "properties": {
+                                                    "enabled": {
+                                                        "$ref": "#/$defs/types/boolean",
+                                                        "default": true
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            },
+                                            {
+                                                "type": [
+                                                    "boolean"
+                                                ]
+                                            }
+                                        ],
+                                        "default": {
+                                            "enabled": true
+                                        }
+                                    },
+                                    "max_query_depth": {
+                                        "$ref": "#/$defs/types/integer",
+                                        "default": 20
+                                    },
+                                    "graphql_playground": {
+                                        "anyOf": [
+                                            {
+                                                "$ref": "#/$defs/types/object_null",
+                                                "properties": {
+                                                    "enabled": {
+                                                        "$ref": "#/$defs/types/boolean",
+                                                        "default": false
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            },
+                                            {
+                                                "type": [
+                                                    "boolean"
+                                                ]
+                                            }
+                                        ],
+                                        "default": {
+                                            "enabled": false
+                                        },
+                                        "deprecated": true,
+                                        "description": "Deprecated since api-platform/core 4.0: The \"graphql_playground\" configuration is deprecated and will be ignored."
+                                    },
+                                    "max_query_complexity": {
+                                        "$ref": "#/$defs/types/integer",
+                                        "default": 500
+                                    },
+                                    "nesting_separator": {
+                                        "$ref": "#/$defs/types/scalar",
+                                        "default": "_",
+                                        "description": "The separator to use to filter nested fields."
+                                    },
+                                    "collection": {
+                                        "$ref": "#/$defs/types/object_null",
+                                        "properties": {
+                                            "pagination": {
+                                                "anyOf": [
+                                                    {
+                                                        "$ref": "#/$defs/types/object_null",
+                                                        "properties": {
+                                                            "enabled": {
+                                                                "$ref": "#/$defs/types/boolean",
+                                                                "default": true
+                                                            }
+                                                        },
+                                                        "additionalProperties": false
+                                                    },
+                                                    {
+                                                        "type": [
+                                                            "boolean"
+                                                        ]
+                                                    }
+                                                ],
+                                                "default": {
+                                                    "enabled": true
+                                                }
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "default": {
+                                            "pagination": {
+                                                "enabled": true
+                                            }
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            {
+                                "type": [
+                                    "boolean"
+                                ]
+                            }
+                        ],
+                        "default": {
+                            "enabled": false,
+                            "default_ide": "graphiql",
+                            "graphiql": {
+                                "enabled": false
+                            },
+                            "introspection": {
+                                "enabled": true
+                            },
+                            "max_query_depth": 20,
+                            "graphql_playground": {
+                                "enabled": false
+                            },
+                            "max_query_complexity": 500,
+                            "nesting_separator": "_",
+                            "collection": {
+                                "pagination": {
+                                    "enabled": true
+                                }
+                            }
+                        }
+                    },
+                    "swagger": {
+                        "$ref": "#/$defs/types/object_null",
+                        "properties": {
+                            "persist_authorization": {
+                                "$ref": "#/$defs/types/boolean",
+                                "default": false,
+                                "description": "Persist the SwaggerUI Authorization in the localStorage."
+                            },
+                            "with_credentials": {
+                                "$ref": "#/$defs/types/boolean",
+                                "default": false,
+                                "description": "Send credentials (cookies, authorization headers) on Swagger UI cross-origin requests (e.g. when running behind Cloudflare Access)."
+                            },
+                            "versions": {
+                                "$ref": "#/$defs/types/array_null",
+                                "items": {
+                                    "$ref": "#/$defs/types/scalar"
+                                },
+                                "default": [
+                                    3
+                                ],
+                                "description": "The active versions of OpenAPI to be exported or used in Swagger UI. The first value is the default."
+                            },
+                            "api_keys": {
+                                "$ref": "#/$defs/types/object_null",
+                                "additionalProperties": {
+                                    "$ref": "#/$defs/types/object_null",
+                                    "properties": {
+                                        "name": {
+                                            "$ref": "#/$defs/types/scalar",
+                                            "description": "The name of the header or query parameter containing the api key."
+                                        },
+                                        "type": {
+                                            "anyOf": [
+                                                {
+                                                    "enum": [
+                                                        "query",
+                                                        "header"
+                                                    ]
+                                                },
+                                                {
+                                                    "$ref": "#/$defs/types/param"
+                                                }
+                                            ],
+                                            "description": "Whether the api key should be a query parameter or a header."
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "http_auth": {
+                                "$ref": "#/$defs/types/object_null",
+                                "additionalProperties": {
+                                    "$ref": "#/$defs/types/object_null",
+                                    "properties": {
+                                        "scheme": {
+                                            "$ref": "#/$defs/types/scalar",
+                                            "description": "The OpenAPI HTTP auth scheme, for example \"bearer\""
+                                        },
+                                        "bearerFormat": {
+                                            "$ref": "#/$defs/types/scalar",
+                                            "description": "The OpenAPI HTTP bearer format"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                },
+                                "description": "Creates http security schemes for OpenAPI."
+                            },
+                            "swagger_ui_extra_configuration": {
+                                "$ref": "#/$defs/types/variable",
+                                "default": [],
+                                "description": "To pass extra configuration to Swagger UI, like docExpansion or filter."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "default": {
+                            "persist_authorization": false,
+                            "with_credentials": false,
+                            "versions": [
+                                3
+                            ],
+                            "api_keys": [],
+                            "http_auth": [],
+                            "swagger_ui_extra_configuration": []
+                        }
+                    },
+                    "http_cache": {
+                        "$ref": "#/$defs/types/object_null",
+                        "properties": {
+                            "public": {
+                                "$ref": "#/$defs/types/boolean_null",
+                                "default": null,
+                                "description": "To make all responses public by default."
+                            },
+                            "invalidation": {
+                                "anyOf": [
+                                    {
+                                        "$ref": "#/$defs/types/object_null",
+                                        "properties": {
+                                            "enabled": {
+                                                "$ref": "#/$defs/types/boolean",
+                                                "default": false
+                                            },
+                                            "varnish_urls": {
+                                                "$ref": "#/$defs/types/array_null",
+                                                "items": {
+                                                    "$ref": "#/$defs/types/scalar"
+                                                },
+                                                "description": "Deprecated since api-platform/core 3.0: The \"varnish_urls\" configuration is deprecated, use \"urls\" or \"scoped_clients\".\n\nURLs of the Varnish servers to purge using cache tags when a resource is updated.",
+                                                "deprecated": true
+                                            },
+                                            "urls": {
+                                                "$ref": "#/$defs/types/array_null",
+                                                "items": {
+                                                    "$ref": "#/$defs/types/scalar"
+                                                },
+                                                "description": "URLs of the Varnish servers to purge using cache tags when a resource is updated."
+                                            },
+                                            "scoped_clients": {
+                                                "$ref": "#/$defs/types/array_null",
+                                                "items": {
+                                                    "$ref": "#/$defs/types/scalar"
+                                                },
+                                                "description": "Service names of scoped client to use by the cache purger."
+                                            },
+                                            "max_header_length": {
+                                                "$ref": "#/$defs/types/integer",
+                                                "default": 7500,
+                                                "description": "Max header length supported by the cache server."
+                                            },
+                                            "request_options": {
+                                                "$ref": "#/$defs/types/variable",
+                                                "default": [],
+                                                "description": "To pass options to the client charged with the request."
+                                            },
+                                            "purger": {
+                                                "$ref": "#/$defs/types/scalar",
+                                                "default": "api_platform.http_cache.purger.varnish",
+                                                "description": "Specify a purger to use (available values: \"api_platform.http_cache.purger.varnish.ban\", \"api_platform.http_cache.purger.varnish.xkey\", \"api_platform.http_cache.purger.souin\")."
+                                            },
+                                            "xkey": {
+                                                "$ref": "#/$defs/types/object_null",
+                                                "properties": {
+                                                    "glue": {
+                                                        "$ref": "#/$defs/types/scalar",
+                                                        "default": " ",
+                                                        "description": "xkey glue between keys"
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "default": {
+                                                    "glue": " "
+                                                },
+                                                "deprecated": true,
+                                                "description": "Deprecated since api-platform/core 3.0: The \"xkey\" configuration is deprecated, use your own purger to customize surrogate keys or the appropriate parameters."
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": [
+                                            "boolean"
+                                        ]
+                                    }
+                                ],
+                                "default": {
+                                    "enabled": false,
+                                    "varnish_urls": [],
+                                    "urls": [],
+                                    "scoped_clients": [],
+                                    "max_header_length": 7500,
+                                    "request_options": [],
+                                    "purger": "api_platform.http_cache.purger.varnish",
+                                    "xkey": {
+                                        "glue": " "
+                                    }
+                                },
+                                "description": "Enable the tags-based cache invalidation system."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "default": {
+                            "public": null,
+                            "invalidation": {
+                                "enabled": false,
+                                "varnish_urls": [],
+                                "urls": [],
+                                "scoped_clients": [],
+                                "max_header_length": 7500,
+                                "request_options": [],
+                                "purger": "api_platform.http_cache.purger.varnish",
+                                "xkey": {
+                                    "glue": " "
+                                }
+                            }
+                        }
+                    },
+                    "mercure": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/$defs/types/object_null",
+                                "properties": {
+                                    "enabled": {
+                                        "$ref": "#/$defs/types/boolean",
+                                        "default": false
+                                    },
+                                    "hub_url": {
+                                        "$ref": "#/$defs/types/scalar",
+                                        "default": null,
+                                        "description": "The URL sent in the Link HTTP header. If not set, will default to the URL for MercureBundle's default hub."
+                                    },
+                                    "include_type": {
+                                        "$ref": "#/$defs/types/boolean",
+                                        "default": false,
+                                        "description": "Always include @type in updates (including delete ones)."
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            {
+                                "type": [
+                                    "boolean"
+                                ]
+                            }
+                        ],
+                        "default": {
+                            "enabled": false,
+                            "hub_url": null,
+                            "include_type": false
+                        }
+                    },
+                    "messenger": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/$defs/types/object_null",
+                                "properties": {
+                                    "enabled": {
+                                        "$ref": "#/$defs/types/boolean",
+                                        "default": true
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            {
+                                "type": [
+                                    "boolean"
+                                ]
+                            }
+                        ],
+                        "default": {
+                            "enabled": true
+                        }
+                    },
+                    "elasticsearch": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/$defs/types/object_null",
+                                "properties": {
+                                    "enabled": {
+                                        "$ref": "#/$defs/types/boolean",
+                                        "default": false
+                                    },
+                                    "hosts": {
+                                        "$ref": "#/$defs/types/array_null",
+                                        "items": {
+                                            "$ref": "#/$defs/types/scalar"
+                                        }
+                                    },
+                                    "ssl_ca_bundle": {
+                                        "$ref": "#/$defs/types/scalar",
+                                        "default": null,
+                                        "description": "Path to the SSL CA bundle file for Elasticsearch SSL verification."
+                                    },
+                                    "ssl_verification": {
+                                        "$ref": "#/$defs/types/boolean",
+                                        "default": true,
+                                        "description": "Enable or disable SSL verification for Elasticsearch connections."
+                                    },
+                                    "client": {
+                                        "anyOf": [
+                                            {
+                                                "enum": [
+                                                    "elasticsearch",
+                                                    "opensearch"
+                                                ]
+                                            },
+                                            {
+                                                "$ref": "#/$defs/types/param"
+                                            }
+                                        ],
+                                        "default": "elasticsearch",
+                                        "description": "The search engine client to use: \"elasticsearch\" or \"opensearch\"."
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            {
+                                "type": [
+                                    "boolean"
+                                ]
+                            }
+                        ],
+                        "default": {
+                            "enabled": false,
+                            "hosts": [],
+                            "ssl_ca_bundle": null,
+                            "ssl_verification": true,
+                            "client": "elasticsearch"
+                        }
+                    },
+                    "openapi": {
+                        "$ref": "#/$defs/types/object_null",
+                        "properties": {
+                            "contact": {
+                                "$ref": "#/$defs/types/object_null",
+                                "properties": {
+                                    "name": {
+                                        "$ref": "#/$defs/types/scalar",
+                                        "default": null,
+                                        "description": "The identifying name of the contact person/organization."
+                                    },
+                                    "url": {
+                                        "$ref": "#/$defs/types/scalar",
+                                        "default": null,
+                                        "description": "The URL pointing to the contact information. MUST be in the format of a URL."
+                                    },
+                                    "email": {
+                                        "$ref": "#/$defs/types/scalar",
+                                        "default": null,
+                                        "description": "The email address of the contact person/organization. MUST be in the format of an email address."
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "default": {
+                                    "name": null,
+                                    "url": null,
+                                    "email": null
+                                }
+                            },
+                            "termsOfService": {
+                                "$ref": "#/$defs/types/scalar",
+                                "default": null,
+                                "description": "A URL to the Terms of Service for the API. MUST be in the format of a URL."
+                            },
+                            "tags": {
+                                "$ref": "#/$defs/types/array_null",
+                                "items": {
+                                    "$ref": "#/$defs/types/object_null",
+                                    "properties": {
+                                        "name": {
+                                            "$ref": "#/$defs/types/scalar"
+                                        },
+                                        "description": {
+                                            "$ref": "#/$defs/types/scalar",
+                                            "default": null
+                                        }
+                                    },
+                                    "required": [
+                                        "name"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "description": "Global OpenApi tags overriding the default computed tags if specified."
+                            },
+                            "license": {
+                                "$ref": "#/$defs/types/object_null",
+                                "properties": {
+                                    "name": {
+                                        "$ref": "#/$defs/types/scalar",
+                                        "default": null,
+                                        "description": "The license name used for the API."
+                                    },
+                                    "url": {
+                                        "$ref": "#/$defs/types/scalar",
+                                        "default": null,
+                                        "description": "URL to the license used for the API. MUST be in the format of a URL."
+                                    },
+                                    "identifier": {
+                                        "$ref": "#/$defs/types/scalar",
+                                        "default": null,
+                                        "description": "An SPDX license expression for the API. The identifier field is mutually exclusive of the url field."
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "default": {
+                                    "name": null,
+                                    "url": null,
+                                    "identifier": null
+                                }
+                            },
+                            "swagger_ui_extra_configuration": {
+                                "$ref": "#/$defs/types/variable",
+                                "default": [],
+                                "description": "To pass extra configuration to Swagger UI, like docExpansion or filter."
+                            },
+                            "scalar_extra_configuration": {
+                                "$ref": "#/$defs/types/variable",
+                                "default": [],
+                                "description": "To pass extra configuration to Scalar API Reference, like theme or darkMode."
+                            },
+                            "overrideResponses": {
+                                "$ref": "#/$defs/types/boolean",
+                                "default": true,
+                                "description": "Whether API Platform adds automatic responses to the OpenAPI documentation."
+                            },
+                            "error_resource_class": {
+                                "$ref": "#/$defs/types/scalar",
+                                "default": null,
+                                "description": "The class used to represent errors in the OpenAPI documentation."
+                            },
+                            "validation_error_resource_class": {
+                                "$ref": "#/$defs/types/scalar",
+                                "default": null,
+                                "description": "The class used to represent validation errors in the OpenAPI documentation."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "default": {
+                            "contact": {
+                                "name": null,
+                                "url": null,
+                                "email": null
+                            },
+                            "termsOfService": null,
+                            "tags": [],
+                            "license": {
+                                "name": null,
+                                "url": null,
+                                "identifier": null
+                            },
+                            "swagger_ui_extra_configuration": [],
+                            "scalar_extra_configuration": [],
+                            "overrideResponses": true,
+                            "error_resource_class": null,
+                            "validation_error_resource_class": null
+                        }
+                    },
+                    "maker": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/$defs/types/object_null",
+                                "properties": {
+                                    "enabled": {
+                                        "$ref": "#/$defs/types/boolean",
+                                        "default": true
+                                    },
+                                    "namespace_prefix": {
+                                        "$ref": "#/$defs/types/scalar",
+                                        "default": "",
+                                        "description": "Add a prefix to all maker generated classes. e.g set it to \"Api\" to set the maker namespace to \"App\\Api\\\" (if the maker.root_namespace config is App). e.g. App\\Api\\State\\MyStateProcessor"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            {
+                                "type": [
+                                    "boolean"
+                                ]
+                            }
+                        ],
+                        "default": {
+                            "enabled": true,
+                            "namespace_prefix": ""
+                        }
+                    },
+                    "mcp": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/$defs/types/object_null",
+                                "properties": {
+                                    "enabled": {
+                                        "$ref": "#/$defs/types/boolean",
+                                        "default": true
+                                    },
+                                    "format": {
+                                        "$ref": "#/$defs/types/scalar",
+                                        "default": "jsonld",
+                                        "description": "The serialization format used for MCP tool input/output. Must be a format registered in api_platform.formats (e.g. \"jsonld\", \"json\", \"jsonapi\")."
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            {
+                                "type": [
+                                    "boolean"
+                                ]
+                            }
+                        ],
+                        "default": {
+                            "enabled": true,
+                            "format": "jsonld"
+                        }
+                    },
+                    "exception_to_status": {
+                        "$ref": "#/$defs/types/object_null",
+                        "additionalProperties": {
+                            "$ref": "#/$defs/types/integer"
+                        },
+                        "default": {
+                            "Symfony\\Component\\Serializer\\Exception\\ExceptionInterface": 400,
+                            "ApiPlatform\\Metadata\\Exception\\InvalidArgumentException": 400,
+                            "Doctrine\\ORM\\OptimisticLockException": 409
+                        },
+                        "description": "The list of exceptions mapped to their HTTP status code."
+                    },
+                    "formats": {
+                        "$ref": "#/$defs/types/object_null",
+                        "additionalProperties": {
+                            "$ref": "#/$defs/types/object_null",
+                            "properties": {
+                                "mime_types": {
+                                    "$ref": "#/$defs/types/array_null",
+                                    "items": {
+                                        "$ref": "#/$defs/types/scalar"
+                                    }
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        "default": {
+                            "jsonld": {
+                                "mime_types": [
+                                    "application/ld+json"
+                                ]
+                            }
+                        },
+                        "description": "The list of enabled formats. The first one will be the default."
+                    },
+                    "patch_formats": {
+                        "$ref": "#/$defs/types/object_null",
+                        "additionalProperties": {
+                            "$ref": "#/$defs/types/object_null",
+                            "properties": {
+                                "mime_types": {
+                                    "$ref": "#/$defs/types/array_null",
+                                    "items": {
+                                        "$ref": "#/$defs/types/scalar"
+                                    }
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        "default": {
+                            "json": {
+                                "mime_types": [
+                                    "application/merge-patch+json"
+                                ]
+                            }
+                        },
+                        "description": "The list of enabled formats. The first one will be the default."
+                    },
+                    "docs_formats": {
+                        "$ref": "#/$defs/types/object_null",
+                        "additionalProperties": {
+                            "$ref": "#/$defs/types/object_null",
+                            "properties": {
+                                "mime_types": {
+                                    "$ref": "#/$defs/types/array_null",
+                                    "items": {
+                                        "$ref": "#/$defs/types/scalar"
+                                    }
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        "default": {
+                            "jsonld": {
+                                "mime_types": [
+                                    "application/ld+json"
+                                ]
+                            },
+                            "jsonopenapi": {
+                                "mime_types": [
+                                    "application/vnd.openapi+json"
+                                ]
+                            },
+                            "html": {
+                                "mime_types": [
+                                    "text/html"
+                                ]
+                            },
+                            "yamlopenapi": {
+                                "mime_types": [
+                                    "application/vnd.openapi+yaml"
+                                ]
+                            }
+                        },
+                        "description": "The list of enabled formats. The first one will be the default."
+                    },
+                    "error_formats": {
+                        "$ref": "#/$defs/types/object_null",
+                        "additionalProperties": {
+                            "$ref": "#/$defs/types/object_null",
+                            "properties": {
+                                "mime_types": {
+                                    "$ref": "#/$defs/types/array_null",
+                                    "items": {
+                                        "$ref": "#/$defs/types/scalar"
+                                    }
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        "default": {
+                            "jsonld": {
+                                "mime_types": [
+                                    "application/ld+json"
+                                ]
+                            },
+                            "jsonproblem": {
+                                "mime_types": [
+                                    "application/problem+json"
+                                ]
+                            },
+                            "json": {
+                                "mime_types": [
+                                    "application/problem+json",
+                                    "application/json"
+                                ]
+                            }
+                        },
+                        "description": "The list of enabled formats. The first one will be the default."
+                    },
+                    "jsonschema_formats": {
+                        "$ref": "#/$defs/types/array_null",
+                        "items": {
+                            "$ref": "#/$defs/types/scalar"
+                        },
+                        "description": "The JSON formats to compute the JSON Schemas for."
+                    },
+                    "defaults": {
+                        "$ref": "#/$defs/types/object_null",
+                        "properties": {
+                            "uri_template": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "short_name": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "description": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "types": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "operations": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "formats": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "input_formats": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "output_formats": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "uri_variables": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "route_prefix": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "defaults": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "requirements": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "options": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "stateless": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "sunset": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "accept_patch": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "status": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "host": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "schemes": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "condition": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "controller": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "class": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "url_generation_strategy": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "deprecation_reason": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "headers": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "cache_headers": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "normalization_context": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "denormalization_context": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "collect_denormalization_errors": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "hydra_context": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "jsonld_context": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "openapi": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "validation_context": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "filters": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "mercure": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "messenger": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "input": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "output": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "order": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "fetch_partial": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "force_eager": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "pagination_client_enabled": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "pagination_client_items_per_page": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "pagination_client_partial": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "pagination_via_cursor": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "pagination_enabled": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "pagination_fetch_join_collection": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "pagination_use_output_walkers": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "pagination_items_per_page": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "pagination_maximum_items_per_page": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "pagination_partial": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "pagination_type": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "security": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "security_message": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "security_post_denormalize": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "security_post_denormalize_message": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "security_post_validation": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "security_post_validation_message": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "composite_identifier": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "exception_to_status": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "query_parameter_validation_enabled": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "links": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "graph_ql_operations": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "provider": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "processor": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "state_options": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "rules": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "policy": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "middleware": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "parameters": {
+                                "$ref": "#/$defs/types/object_null",
+                                "additionalProperties": {
+                                    "$ref": "#/$defs/types/object_null",
+                                    "properties": {
+                                        "class": {
+                                            "$ref": "#/$defs/types/scalar",
+                                            "description": "The parameter class for a named global parameter entry."
+                                        },
+                                        "key": {
+                                            "$ref": "#/$defs/types/variable"
+                                        },
+                                        "schema": {
+                                            "$ref": "#/$defs/types/variable"
+                                        },
+                                        "open_api": {
+                                            "$ref": "#/$defs/types/variable"
+                                        },
+                                        "provider": {
+                                            "$ref": "#/$defs/types/variable"
+                                        },
+                                        "filter": {
+                                            "$ref": "#/$defs/types/variable"
+                                        },
+                                        "property": {
+                                            "$ref": "#/$defs/types/variable"
+                                        },
+                                        "description": {
+                                            "$ref": "#/$defs/types/variable"
+                                        },
+                                        "properties": {
+                                            "$ref": "#/$defs/types/variable"
+                                        },
+                                        "required": {
+                                            "$ref": "#/$defs/types/variable"
+                                        },
+                                        "priority": {
+                                            "$ref": "#/$defs/types/variable"
+                                        },
+                                        "hydra": {
+                                            "$ref": "#/$defs/types/variable"
+                                        },
+                                        "constraints": {
+                                            "$ref": "#/$defs/types/variable"
+                                        },
+                                        "security": {
+                                            "$ref": "#/$defs/types/variable"
+                                        },
+                                        "security_message": {
+                                            "$ref": "#/$defs/types/variable"
+                                        },
+                                        "extra_properties": {
+                                            "$ref": "#/$defs/types/variable"
+                                        },
+                                        "filter_context": {
+                                            "$ref": "#/$defs/types/variable"
+                                        },
+                                        "native_type": {
+                                            "$ref": "#/$defs/types/variable"
+                                        },
+                                        "cast_to_array": {
+                                            "$ref": "#/$defs/types/variable"
+                                        },
+                                        "cast_to_native_type": {
+                                            "$ref": "#/$defs/types/variable"
+                                        },
+                                        "cast_fn": {
+                                            "$ref": "#/$defs/types/variable"
+                                        },
+                                        "default": {
+                                            "$ref": "#/$defs/types/variable"
+                                        },
+                                        "filter_class": {
+                                            "$ref": "#/$defs/types/variable"
+                                        }
+                                    },
+                                    "additionalProperties": true
+                                },
+                                "description": "Global parameters applied to all resources and operations."
+                            },
+                            "strict_query_parameter_validation": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "hide_hydra_operation": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "json_stream": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "throw_on_not_found": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "extra_properties": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "map": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "mcp": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "route_name": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "errors": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "read": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "deserialize": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "validate": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "write": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "serialize": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "content_negotiation": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "priority": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "name": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "allow_create": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "item_uri_template": {
+                                "$ref": "#/$defs/types/variable"
+                            }
+                        },
+                        "additionalProperties": true
+                    }
+                },
+                "additionalProperties": false
+            },
             "asset": {
                 "anyOf": [
                     {
@@ -8950,6 +10544,9 @@
     },
     "type": "object",
     "properties": {
+        "api_platform": {
+            "$ref": "#/$defs/nodes/api_platform"
+        },
         "asset": {
             "$ref": "#/$defs/nodes/asset"
         },
@@ -9025,6 +10622,9 @@
         "when@dev": {
             "$ref": "#/$defs/types/object_null",
             "properties": {
+                "api_platform": {
+                    "$ref": "#/$defs/nodes/api_platform"
+                },
                 "asset": {
                     "$ref": "#/$defs/nodes/asset"
                 },
@@ -9112,6 +10712,9 @@
         "when@test": {
             "$ref": "#/$defs/types/object_null",
             "properties": {
+                "api_platform": {
+                    "$ref": "#/$defs/nodes/api_platform"
+                },
                 "asset": {
                     "$ref": "#/$defs/nodes/asset"
                 },
@@ -9195,6 +10798,9 @@
         "^when@[a-zA-Z0-9]+$": {
             "$ref": "#/$defs/types/object_null",
             "properties": {
+                "api_platform": {
+                    "$ref": "#/$defs/nodes/api_platform"
+                },
                 "asset": {
                     "$ref": "#/$defs/nodes/asset"
                 },

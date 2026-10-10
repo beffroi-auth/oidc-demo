@@ -10,6 +10,42 @@ security:
         dev:
             pattern: ^/(_profiler|_wdt|assets|build)/
             security: false
+        # The API of this demonstration (beffroi#556), which API Platform serves under /api/v1: one
+        # firewall for the whole API, and it is the only thing that decides whether a request gets in.
+        #
+        # RFC 7662: the client sends the access token it was issued and this API asks the provider what
+        # it is, at every request, because an answer about a token is the provider's to give whatever the
+        # shape of that token. The credentials it asks with are the ones of the client the token was
+        # issued to (RFC 7662 section 2.2), which is the scoped client of config/packages/framework.yaml.
+        #
+        # RFC 7662 section 4 leaves the trade-off to the resource server, and this one takes a few
+        # seconds: the answer of an active token is remembered for app.api.introspection_cache_ttl,
+        # keyed by the digest of the token and never beyond the "exp" the provider reported, so a
+        # revoked token is accepted for that window and no longer. The figure is written once, in
+        # config/services.yaml, where the answer of /api/v1/account reads it too.
+        #
+        # What each operation then needs is a scope, voted on by the OAUTH2_SCOPE attribute of Symfony
+        # against the scopes the introspection response says were granted (src/ApiResource/). A denial
+        # for a missing scope is a 403 with the "insufficient_scope" challenge of RFC 6750 section 3.1,
+        # not a 401: the token is good, it was never granted that.
+        api_platform:
+            pattern: ^/api/v1
+            stateless: true
+            # What answers a request refused for a scope the token was not granted: the expression of an
+            # operation is what API Platform denies on, and a boolean carries no attribute, so the scope
+            # is read back from the operation that names it (src/Api/TheScopeOfTheOperation.php).
+            access_denied_handler: App\Api\TheScopeOfTheOperation
+            access_token:
+                realm: '%app.api.realm%'
+                token_handler:
+                    oauth2:
+                        http_client: introspection.client
+                        issuer: '%env(OIDC_PROVIDER_URI)%'
+                        audience: '%env(OIDC_CLIENT_ID)%'
+                        cache:
+                            id: cache.app
+                            ttl: '%app.api.introspection_cache_ttl%'
+
         # The resource server: three firewalls, one route each, on the very same access token
         # this application already holds for its user. They differ only in how the token is
         # checked, which is the whole point of the demonstration.
@@ -271,7 +307,12 @@ security:
                 # way, since a provider describes a token to the client it was issued to
                 client_authentication:
                     client_secret_basic: '%env(OIDC_CLIENT_SECRET)%'
-                scope: ['openid', 'profile', 'email']
+                # The three scopes an application that signs a user in comes for, and the two the API of
+                # /api/v1 reads (beffroi#556). "invoices.write" is registered on the provider and is not
+                # asked for here: the token this client holds therefore never carries it, which is what
+                # makes the refusal of a write a 403 "insufficient_scope" rather than something this
+                # application decided.
+                scope: ['openid', 'profile', 'email', 'invoices.read', 'invoices.pay']
                 # RFC 6749 section 6: the access token is renewed with the refresh token
                 # before it expires, in place, on the next request
                 refresh_access_token: true
@@ -305,6 +346,10 @@ security:
         # without one on purpose
         - { path: '^/c/[a-z-]+/profile$', roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/profile, roles: ROLE_USER }
+        # what an API says of itself is public: the entrypoint, the documentation and the contexts the
+        # JSON-LD answers point at say which operations exist and what they need, and nothing of
+        # anybody's invoices is in them. The data of the API is the rule below, like every other /api/
+        - { path: '^/api/v1(/docs|/contexts|/\.well-known|/?$)', roles: PUBLIC_ACCESS }
         # a request without a bearer token is not an authenticated one: the entry point of the
         # "access_token" authenticator answers it with the 401 and the challenge of RFC 6750 section 3
         - { path: ^/api/, roles: IS_AUTHENTICATED_FULLY }

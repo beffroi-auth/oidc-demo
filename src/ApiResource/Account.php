@@ -1,0 +1,45 @@
+<?php
+
+namespace App\ApiResource;
+
+use ApiPlatform\Metadata\ApiProperty;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use App\State\AccountProvider;
+
+/**
+ * Who the access token names, and how this API came to believe it: the subject, the scopes the provider
+ * says the token was granted, and the client it was issued to, all of it read from the introspection
+ * response the firewall obtained and nothing of it stored here.
+ *
+ * It is behind "profile", a scope of OIDC Core section 5.4 the demonstration already asks for, so that
+ * the API has one operation whose scope was not invented for it.
+ */
+#[ApiResource(
+    shortName: 'Account',
+    description: 'The subject the access token names, as the provider described it',
+    operations: [
+        new Get(
+            uriTemplate: '/account',
+            security: "is_granted('OAUTH2_SCOPE(profile)')",
+            provider: AccountProvider::class,
+        ),
+    ],
+)]
+final class Account
+{
+    public function __construct(
+        #[ApiProperty(identifier: true, description: 'The "sub" of the introspection response')]
+        public string $sub = '',
+        /**
+         * @var list<string>
+         */
+        #[ApiProperty(description: 'The scopes the provider says this token was granted (RFC 7662 section 2.2)')]
+        public array $scope = [],
+        #[ApiProperty(description: 'The client the token was issued to')]
+        public ?string $clientId = null,
+        #[ApiProperty(description: 'How this API decided the token was usable')]
+        public string $checkedBy = '',
+    ) {
+    }
+}

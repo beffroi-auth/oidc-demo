@@ -12,6 +12,18 @@ parameters:
     # asks the provider for them, in this order of preference.
     app.acr.accepted_classes: ['phr']
 
+    # How long this API goes on believing an introspection response, in seconds (RFC 7662 section 4):
+    # the firewall of /api/v1 caches the answer of an active token for that long, and the answer of
+    # /api/v1/account says the same figure, because a resource server that told a client one window and
+    # applied another would be two places that must agree. A few seconds is what spares the provider a
+    # round trip per request without carrying a revoked token for long.
+    app.api.introspection_cache_ttl: 5
+
+    # The realm of the API, in one place: the firewall announces it in the challenge of a request that
+    # carries no token (RFC 6750 section 3), and the handler of a refusal for a missing scope announces
+    # the same one (section 3.1).
+    app.api.realm: 'Invoices of the demonstration'
+
 services:
     # default configuration for services in *this* file
     _defaults:
@@ -77,3 +89,18 @@ services:
             $redirectUri: '%env(DEMO_BASE_URI)%/c/fapi/callback'
             $signatureKey: '%env(DEMO_FAPI_JWK)%'
             $encryptionKey: '%env(DEMO_FAPI_ENCRYPTION_JWK)%'
+
+    # The API of this demonstration (beffroi#556): its state classes read the access token the firewall
+    # of /api/v1 obtained, and its book of invoices lives in the cache pool of this application, no
+    # entity and no database being what this demonstration is about.
+    App\Invoice\InvoiceBook:
+        arguments:
+            $pool: '@cache.app'
+
+    App\Api\TheScopeOfTheOperation:
+        arguments:
+            $realm: '%app.api.realm%'
+
+    App\State\AccountProvider:
+        arguments:
+            $introspectionCacheTtl: '%app.api.introspection_cache_ttl%'

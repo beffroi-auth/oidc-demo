@@ -108,6 +108,18 @@
         <pre>{{ client.answer|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_SLASHES')) }}</pre>
     </details>
 
+    {% if read is not null %}
+        <div class="card{{ read.answer is null ? ' error' : ' ok' }}" data-read="{{ read.answer is null ? 'nothing' : read.answer.client_id|default('?') }}">
+            <h2>What the provider says of it now</h2>
+            <p>{{ read.said }} (RFC 7592 §2.1).</p>
+            {% if read.answer is not null %}
+                <pre>{{ read.answer|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_SLASHES')) }}</pre>
+            {% endif %}
+        </div>
+    {% else %}
+        <p><a class="button" href="{{ path('app_forge_profile', {handle: client.handle, read: 1}) }}">Ask the provider what it holds of this client (RFC 7592 §2.1)</a></p>
+    {% endif %}
+
     <p>
         <a class="button" href="{{ path('app_home', {from: client.handle}) }}#compose">Take it apart and build another</a>
         <form class="inline" method="post" action="{{ path('app_forge_delete', {handle: client.handle}) }}">

@@ -91,11 +91,13 @@ final readonly class Forge
             throw new ForgeException(sprintf('The provider registered no client: %s', json_encode($answer)));
         }
         $secret = $answer['client_secret'] ?? null;
+        $registrationToken = $answer['registration_access_token'] ?? null;
 
         $client = new BuiltClient(
             $handle,
             $clientId,
             is_string($secret) && $secret !== '' ? $secret : null,
+            is_string($registrationToken) && $registrationToken !== '' ? $registrationToken : null,
             $form,
             $registration,
             $this->withoutCredentials($answer),
@@ -119,7 +121,9 @@ final readonly class Forge
     {
         $response = $this->httpClient->request('GET', $this->registrationUri($client), [
             'max_redirects' => 0,
-            'auth_bearer' => $this->registrationAccessToken($client),
+            'auth_bearer' => $client->registrationAccessToken ?? throw new ForgeException(
+                'The provider handed this client no registration access token, so it reads nothing of itself (RFC 7592 §2).',
+            ),
         ]);
         $values = json_decode($response->getContent(false), true);
         if (! is_array($values)) {
@@ -131,22 +135,27 @@ final readonly class Forge
     }
 
     /**
-     * RFC 7592 §2.3: the client deletes itself. What the provider answers is 204 and nothing, and the
-     * store forgets it whatever the provider answered: a client this demonstration cannot reach any more
-     * is not one it should keep offering a page for, and the provider removes an unused registration on
-     * its own (decision 0009).
+     * RFC 7592 §2.3: the client deletes itself, and what the provider answered is given back so that the
+     * page says it rather than claiming the deletion. 204 and no body is what a provider answers; a client
+     * the provider handed no URI and no credential answers nothing at all, and the provider removes it on
+     * its own once it has gone unused (decision 0009).
+     *
+     * The store forgets it whatever came back: a client this demonstration cannot reach any more is not
+     * one it should keep offering a page for.
      */
-    public function unmake(BuiltClient $client): void
+    public function unmake(BuiltClient $client): ?int
     {
         $uri = $client->registrationUri();
-        $token = $client->registrationAccessToken();
+        $token = $client->registrationAccessToken;
         try {
-            if ($uri !== null && $token !== null) {
-                $this->httpClient->request('DELETE', $uri, [
-                    'max_redirects' => 0,
-                    'auth_bearer' => $token,
-                ])->getStatusCode();
+            if ($uri === null || $token === null) {
+                return null;
             }
+
+            return $this->httpClient->request('DELETE', $uri, [
+                'max_redirects' => 0,
+                'auth_bearer' => $token,
+            ])->getStatusCode();
         } finally {
             $this->clients->forget($client->handle);
         }
@@ -210,16 +219,6 @@ final readonly class Forge
     {
         return $client->registrationUri() ?? throw new ForgeException(
             'The provider handed this client no registration URI, so it reads nothing of itself (RFC 7592 §2).',
-        );
-    }
-
-    /**
-     * @throws ForgeException when the provider handed out no credential for this client
-     */
-    private function registrationAccessToken(BuiltClient $client): string
-    {
-        return $client->registrationAccessToken() ?? throw new ForgeException(
-            'The provider handed this client no registration access token, so it reads nothing of itself (RFC 7592 §2).',
         );
     }
 

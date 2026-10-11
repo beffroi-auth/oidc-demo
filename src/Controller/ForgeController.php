@@ -41,7 +41,12 @@ final class ForgeController extends AbstractController
     #[Route('/', name: 'app_home', methods: ['GET'])]
     public function forge(Request $request): Response
     {
-        return $this->page($request->query->getString('preset'), $request->query->getString('from'));
+        return $this->page(
+            $request->query->getString('preset'),
+            $request->query->getString('from'),
+            deleted: $request->query->getString('deleted'),
+            answered: $request->query->getString('answered'),
+        );
     }
 
     /**
@@ -71,23 +76,34 @@ final class ForgeController extends AbstractController
     }
 
     /**
-     * RFC 7592 §2.3: the client deletes itself at the provider, and this browser forgets it.
+     * RFC 7592 §2.3: the client deletes itself at the provider, and this browser forgets it. What the
+     * provider answered travels to the page, which says it: a deletion nobody read the answer of is a
+     * deletion nobody knows happened.
      */
     #[Route('/forge/{handle}/delete', name: 'app_forge_delete', requirements: ['handle' => '[a-z0-9-]+'], methods: ['POST'])]
     public function delete(string $handle): Response
     {
-        if ($this->clients->holds($handle)) {
-            $this->forge->unmake($this->clients->of($handle));
-        }
+        $answered = $this->clients->holds($handle)
+            ? $this->forge->unmake($this->clients->of($handle))
+            : null;
 
-        return $this->redirectToRoute('app_home');
+        return $this->redirectToRoute('app_home', [
+            'deleted' => $handle,
+            'answered' => $answered === null ? 'nothing' : (string) $answered,
+        ]);
     }
 
     /**
      * @param array<string, mixed>|null $filled
      */
-    private function page(string $preset, string $from, ?array $filled = null, ?string $error = null): Response
-    {
+    private function page(
+        string $preset,
+        string $from,
+        ?array $filled = null,
+        ?string $error = null,
+        string $deleted = '',
+        string $answered = '',
+    ): Response {
         if ($filled === null && $preset !== '') {
             $filled = $this->presets->of($preset)->form;
         }
@@ -103,6 +119,8 @@ final class ForgeController extends AbstractController
             'built' => $this->clients->all(),
             'holds_a_token' => $this->forge->holdsAnInitialAccessToken(),
             'error' => $error,
+            'deleted' => $deleted,
+            'answered' => $answered,
             'provider_uri' => $this->providerUri,
         ]);
     }

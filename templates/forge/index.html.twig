@@ -50,6 +50,15 @@
         </div>
     {% endif %}
 
+    {% if deleted %}
+        <div class="card ok" data-deleted="{{ deleted }}" data-answered="{{ answered }}">
+            <h2>The client <code>{{ deleted }}</code> deleted itself</h2>
+            <p>It asked the provider to remove its registration at the URI it was handed, with the
+                credential it was handed, and the provider answered <code>{{ answered }}</code>
+                (RFC 7592 §2.3 answers 204 and no body).</p>
+        </div>
+    {% endif %}
+
     {% if error %}
         <div class="card error">
             <h2>The provider refused this composition</h2>

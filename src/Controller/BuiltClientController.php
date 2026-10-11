@@ -8,6 +8,7 @@ use App\Forge\BuiltClients;
 use App\Forge\EndedSessions;
 use App\Forge\Flow\FlowClient;
 use App\Forge\Flow\LogoutTokenReader;
+use App\Forge\Forge;
 use App\Forge\ForgeException;
 use App\Forge\WhatOidcLoginCannotServe;
 use App\Security\Forge\ForgeAuthenticator;
@@ -31,6 +32,7 @@ final class BuiltClientController extends AbstractController
     public function __construct(
         private readonly BuiltClients $clients,
         private readonly FlowClient $flow,
+        private readonly Forge $forge,
         private readonly WhatOidcLoginCannotServe $gaps,
         private readonly string $providerUri,
     ) {
@@ -42,7 +44,7 @@ final class BuiltClientController extends AbstractController
      * each direction, what it holds, and what Symfony's own authenticator could not have served.
      */
     #[Route('/c/{handle}/profile', name: 'app_forge_profile', requirements: ['handle' => '[a-z0-9-]+'], methods: ['GET'])]
-    public function profile(string $handle, Security $security): Response
+    public function profile(string $handle, Request $request, Security $security): Response
     {
         $client = $this->clients->of($handle);
         $composition = $this->flow->compositionOf($client);
@@ -53,6 +55,9 @@ final class BuiltClientController extends AbstractController
 
         return $this->render('forge/client.html.twig', [
             'client' => $client,
+            // RFC 7592 §2.1: what the provider says of this client now, asked for at the URI it handed out
+            // with the credential it handed out, and only when the page was asked to
+            'read' => $request->query->getBoolean('read') ? $this->read($client) : null,
             'composition' => $composition,
             'described' => $this->flow->describe($composition),
             'gaps' => $this->gaps->of($composition),
@@ -62,6 +67,27 @@ final class BuiltClientController extends AbstractController
             'hops' => $signedIn && $token->hasAttribute(ForgeAuthenticator::HOPS_ATTRIBUTE) ? $token->getAttribute(ForgeAuthenticator::HOPS_ATTRIBUTE) : [],
             'provider_uri' => $this->providerUri,
         ]);
+    }
+
+    /**
+     * RFC 7592 §2.1: the registration as the provider holds it now, or what it answered instead. It is the
+     * one way a dynamic client reads itself, and the page prints the answer whichever it is.
+     *
+     * @return array{answer: array<string, mixed>|null, said: string}
+     */
+    private function read(\App\Forge\BuiltClient $client): array
+    {
+        try {
+            return [
+                'answer' => $this->forge->read($client),
+                'said' => 'the provider answered the registration it holds',
+            ];
+        } catch (ForgeException $exception) {
+            return [
+                'answer' => null,
+                'said' => $exception->getMessage(),
+            ];
+        }
     }
 
     /**

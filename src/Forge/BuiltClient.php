@@ -20,12 +20,14 @@ final readonly class BuiltClient
     /**
      * @param array<string, mixed> $form what was composed, as the form submitted it
      * @param array<string, mixed> $registration what was sent to the registration endpoint
-     * @param array<string, mixed> $answer what the provider answered, its credentials taken out of it
+     * @param array<string, mixed> $answer what the provider answered, the two credentials it issued taken
+     *                                      out of it: the page prints this, and a page prints no credential
      */
     public function __construct(
         public string $handle,
         public string $clientId,
         public ?string $clientSecret,
+        public ?string $registrationAccessToken,
         public array $form,
         public array $registration,
         public array $answer,
@@ -35,17 +37,10 @@ final readonly class BuiltClient
     }
 
     /**
-     * RFC 7592 §2: the credential the provider issued for this client to read, replace and delete itself,
-     * and the URI it does so at. A registration that answered neither leaves the client where it is: the
-     * provider removes it on its own once it has gone unused (decision 0009).
+     * RFC 7592 §2: where this client reads and deletes itself, the credential that does so being the field
+     * above. A registration that answered neither leaves the client where it is: the provider removes it
+     * on its own once it has gone unused (decision 0009).
      */
-    public function registrationAccessToken(): ?string
-    {
-        $token = $this->answer['registration_access_token'] ?? null;
-
-        return is_string($token) && $token !== '' ? $token : null;
-    }
-
     public function registrationUri(): ?string
     {
         $uri = $this->answer['registration_client_uri'] ?? null;
@@ -69,6 +64,7 @@ final readonly class BuiltClient
             'handle' => $this->handle,
             'client_id' => $this->clientId,
             'client_secret' => $this->clientSecret,
+            'registration_access_token' => $this->registrationAccessToken,
             'form' => $this->form,
             'registration' => $this->registration,
             'answer' => $this->answer,
@@ -103,6 +99,7 @@ final readonly class BuiltClient
             $handle,
             $clientId,
             is_string($values['client_secret'] ?? null) ? $values['client_secret'] : null,
+            is_string($values['registration_access_token'] ?? null) ? $values['registration_access_token'] : null,
             $form,
             $registration,
             $answer,

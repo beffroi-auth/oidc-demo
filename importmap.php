@@ -20,11 +20,11 @@
  *     package_specifier?: string, // Remote "package-name/path" specifier, defaults to the import name
  *     type?: 'js'|'css'|'json',
  *     entrypoint?: bool,
+ *     esm?: bool,                 // Whether jsDelivr's ESM build is used, defaults to true
  * }>
  */
 return [
-    'app' => ['path' => './assets/app.js', 'entrypoint' => true],
     '@hotwired/stimulus' => ['version' => '3.2.2'],
     '@symfony/stimulus-bundle' => ['path' => './vendor/symfony/stimulus-bundle/assets/dist/loader.js'],
-    '@hotwired/turbo' => ['version' => '8.0.23'],
+    'app' => ['path' => './assets/app.js', 'entrypoint' => true],
 ];

@@ -1,0 +1,28 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ handle }}: the login was refused{% endblock %}
+
+{% block body %}
+    <h1>The login of <code>{{ handle }}</code> was refused</h1>
+    <p class="lead">What follows is what the provider or this client said, in its own words. It is the page
+        a refused login lands on, so that the reason is read instead of being bounced back for another
+        try.</p>
+
+    <div class="card error">
+        <h2>Why</h2>
+        <p><code>{{ error ? error.messageKey|trans(error.messageData, 'security') : 'Nothing was said, which is itself worth looking into.' }}</code></p>
+    </div>
+
+    {% if client %}
+        <table class="kv">
+            <tr><th>client_id</th><td><code>{{ client.clientId }}</code></td></tr>
+            <tr><th>What it is</th><td>{{ client.name }}</td></tr>
+        </table>
+        <p>
+            <a class="button" href="{{ path('app_forge_start', {handle: handle}) }}">Try it again</a>
+            <a class="button" href="{{ path('app_home', {from: handle}) }}#compose">Change the composition</a>
+        </p>
+    {% else %}
+        <p><a class="button" href="{{ path('app_home') }}">Back to the forge</a></p>
+    {% endif %}
+{% endblock %}

@@ -33,6 +33,16 @@ services:
             string $providerUri: '%env(OIDC_PROVIDER_URI)%'
             string $clientId: '%env(OIDC_CLIENT_ID)%'
 
+    # The three capabilities of the forge whose classes are what the form offers: a method added is a
+    # class written and tagged, and nothing else anywhere (beffroi#582).
+    _instanceof:
+        App\Forge\Flow\Authentication\ClientAuthenticationInterface:
+            tags: ['app.forge.client_authentication']
+        App\Forge\Flow\Delivery\AuthorizationResponseInterface:
+            tags: ['app.forge.delivery']
+        App\Forge\Flow\Binding\TokenBindingInterface:
+            tags: ['app.forge.binding']
+
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
     App\:
@@ -77,18 +87,79 @@ services:
             $entryPoint: '@security.authenticator.oidc_login.main'
             $firewallName: 'main'
 
-    # The laboratory client of the last rung of the ladder (beffroi#201): the one thing here that is not
-    # Symfony's "oidc_login", because what that rung asks for is what the authenticator cannot do yet.
-    App\Security\Fapi\FapiClient:
+    # The forge of clients (beffroi#582): the laboratory client of this demonstration, the one thing here
+    # that is not Symfony's "oidc_login", because what a composition can ask for is what the authenticator
+    # cannot do yet (RP-04, RP-05, RP-06 and RP-07 of the status document).
+    #
+    # What the provider offers and what the demonstration can play are read, never written down: the
+    # document of the provider on one side, the tagged classes on the other, and the form offers the two
+    # crossed (App\Forge\TheForm).
+    App\Forge\Offer:
+        arguments:
+            $httpClient: '@http_client'
+            $cache: '@cache.app'
+
+    App\Forge\Flow\Jwt:
         arguments:
             $httpClient: '@http_client'
             $cache: '@cache.app'
             $clock: '@clock'
-            $providerUri: '%env(OIDC_PROVIDER_URI)%'
-            $clientId: '%env(DEMO_FAPI_CLIENT_ID)%'
-            $redirectUri: '%env(DEMO_BASE_URI)%/c/fapi/callback'
-            $signatureKey: '%env(DEMO_FAPI_JWK)%'
-            $encryptionKey: '%env(DEMO_FAPI_ENCRYPTION_JWK)%'
+
+    # RFC 7591 §1.2: the credential the registration endpoint of this tenant asks for, which the console
+    # of the provider issues and "castor demo --forge" writes here. Empty, nothing is built and the page
+    # says what to run.
+    App\Forge\Forge:
+        arguments:
+            $initialAccessToken: '%env(FORGE_INITIAL_ACCESS_TOKEN)%'
+
+    # RFC 9396 §2: the resource the detail of the preset that asks for one names, which is the resource
+    # this demonstration serves.
+    App\Forge\Presets:
+        arguments:
+            $resource: '%env(OIDC_RESOURCE)%'
+
+    App\Forge\BuiltClients:
+        arguments:
+            $pool: '@app.forge_clients'
+
+    App\Forge\EndedSessions:
+        arguments:
+            $pool: '@app.forge_ended_sessions'
+
+    # An HTTP client presents a certificate as a file, so what the store holds is written out here, under
+    # the handle of the client it belongs to.
+    App\Forge\Flow\Authentication\CertificateFiles:
+        arguments:
+            $directory: '%kernel.project_dir%/var/forge'
+
+    App\Forge\Flow\Authentication\ClientAuthentications:
+        arguments:
+            $methods: !tagged_iterator app.forge.client_authentication
+
+    App\Forge\Flow\Delivery\Deliveries:
+        arguments:
+            $shapes: !tagged_iterator app.forge.delivery
+
+    App\Forge\Flow\Binding\Bindings:
+        arguments:
+            $kinds: !tagged_iterator app.forge.binding
+
+    # What the forge built, and which sessions of the provider its back channel said had ended: two pools
+    # of this instance alone, as the one of the "main" firewall below is, so that two demonstrations
+    # running side by side on one machine neither read each other's clients nor end each other's sessions.
+    app.forge_clients:
+        class: Symfony\Component\Cache\Adapter\FilesystemAdapter
+        arguments:
+            - 'forge_clients'
+            - 0
+            - '%kernel.cache_dir%/forge-clients'
+
+    app.forge_ended_sessions:
+        class: Symfony\Component\Cache\Adapter\FilesystemAdapter
+        arguments:
+            - 'forge_ended_sessions'
+            - 0
+            - '%kernel.cache_dir%/forge-ended-sessions'
 
     # The API of this demonstration (beffroi#556): its state classes read the access token the firewall
     # of /api/v1 obtained, and its book of invoices lives in the cache pool of this application, no
@@ -98,17 +169,16 @@ services:
             $pool: '@cache.app'
 
     # Which clients of this demonstration the API may ask the provider about (RFC 7662 section 2.2): every
-    # one whose secret this application holds, in the order they are asked. The main firewall and the first
-    # rung share one registration, the opaque rung has its own, and the two rungs that prove a key instead
-    # of sharing a secret (demo-key, demo-fapi, private_key_jwt) are absent: introspecting their tokens
-    # would mean signing an assertion, which an HTTP client does not do, so their tokens stay refused.
+    # one whose secret this application holds, in the order they are asked. They are the clients declared
+    # in the configuration of the provider, which the walks of "castor demo" sign in as. A client the forge
+    # built is absent, and its tokens are therefore refused here: it is registered at the provider and
+    # gone again within the day, and this list is read when the container is built.
     App\Api\WhicheverClientKnowsTheToken:
         arguments:
             $client: '@introspection.client'
             $clients:
                 - { client_id: '%env(OIDC_CLIENT_ID)%', secret: '%env(OIDC_CLIENT_SECRET)%' }
                 - { client_id: '%env(DEMO_OPAQUE_CLIENT_ID)%', secret: '%env(DEMO_OPAQUE_SECRET)%' }
-                - { client_id: '%env(DEMO_FORM_POST_CLIENT_ID)%', secret: '%env(DEMO_FORM_POST_SECRET)%' }
                 - { client_id: '%env(DEMO_RAR_CLIENT_ID)%', secret: '%env(DEMO_RAR_SECRET)%' }
 
     App\Api\TheScopeOfTheOperation:

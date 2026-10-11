@@ -13,7 +13,7 @@
         <header class="topbar">
             <a class="brand" href="{{ path('app_home') }}">🔐 oidc_login demo</a>
             <nav>
-                {# the ladder pages know which firewall they belong to and say so themselves #}
+                {# the page of a built client knows the firewall it belongs to and says so itself #}
                 {% block topbar_nav %}
                     {# The pages of the demonstration are listed whether or not a session is open: each one
                        is behind the firewall it belongs to, so following it when there is no session is how
@@ -23,7 +23,7 @@
                     <a href="{{ path('app_profile') }}">Profile</a>
                     <a href="{{ path('app_api_calls') }}">API calls</a>
                     <a href="{{ path('app_vault') }}">Vault</a>
-                    <a href="{{ path('app_home') }}">The ladder</a>
+                    <a href="{{ path('app_home') }}">The forge</a>
                     {% if app.user %}
                         {# A logout is posted: as a link, Turbo prefetches it on hover and fires it on
                            its own. The form is written by hand for as long as the installed twig-bridge

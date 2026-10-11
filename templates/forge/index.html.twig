@@ -1,0 +1,208 @@
+{% extends 'base.html.twig' %}
+
+{% macro choose(name, options, filled, label, help, blank) %}
+    <label class="field">
+        <span class="field-label">{{ label }}</span>
+        <select name="{{ name }}">
+            {% if blank is not null %}<option value="">{{ blank }}</option>{% endif %}
+            {% for option in options %}
+                {% set value = option.name is defined ? option.name : option %}
+                {% set title = option.describe is defined ? option.describe : value %}
+                <option value="{{ value }}" title="{{ title }}" {{ filled[name]|default('') == value ? 'selected' : '' }}>{{ value }}</option>
+            {% endfor %}
+        </select>
+        {% if help %}<span class="field-help">{{ help }}</span>{% endif %}
+    </label>
+{% endmacro %}
+
+{% macro check(name, filled, label, help) %}
+    <label class="field check">
+        <input type="checkbox" name="{{ name }}" value="on" {{ filled[name]|default(false) ? 'checked' : '' }}>
+        <span class="field-label">{{ label }}</span>
+        {% if help %}<span class="field-help">{{ help }}</span>{% endif %}
+    </label>
+{% endmacro %}
+
+{% block title %}The forge of clients{% endblock %}
+
+{% block body %}
+    {% import _self as f %}
+
+    <h1>Forge a client</h1>
+    <p class="lead">One provider, one identity, and as many clients as there are ways of asking. Every
+        choice below is read from the document <code>{{ provider_uri }}</code> publishes: what it does not
+        announce is not offered here. The client is registered the moment you build it (RFC 7591), signs
+        the user in, and deletes itself when you are done with it (RFC 7592).</p>
+
+    {% if not choices.registers %}
+        <div class="card error">
+            <h2>This provider registers no client</h2>
+            <p>Its document announces no <code>registration_endpoint</code>, so nothing can be built here.
+                A tenant decides that, and its mode is written in its configuration.</p>
+        </div>
+    {% elseif not holds_a_token %}
+        <div class="card error">
+            <h2>This demonstration holds no initial access token</h2>
+            <p>The registration endpoint of this tenant asks for one (RFC 7591 §1.2), and the console of
+                the provider issues it: <code>castor demo --forge</code> writes one into
+                <code>.env.local</code> as <code>FORGE_INITIAL_ACCESS_TOKEN</code>. Building a client
+                without one is refused by the provider, and the page will say so in its words.</p>
+        </div>
+    {% endif %}
+
+    {% if error %}
+        <div class="card error">
+            <h2>The provider refused this composition</h2>
+            <p><code>{{ error }}</code></p>
+        </div>
+    {% endif %}
+
+    <h2>Presets</h2>
+    <p class="muted">Eight compositions written down, five of them the rungs of the ladder this page
+        replaced. A preset fills the form below, and building it replaces the client of the same name.</p>
+    <div class="presets">
+        {% for preset in presets %}
+            <div class="card preset">
+                <h2>{{ preset.name }}</h2>
+                <p>{{ preset.what }}</p>
+                <p>
+                    <a class="button" href="{{ path('app_home', {preset: preset.slug}) }}#compose">Fill the form</a>
+                    <form class="inline" method="post" action="{{ path('app_forge_build') }}">
+                        <input type="hidden" name="preset" value="{{ preset.slug }}">
+                        <button class="button" type="submit">Build and sign in</button>
+                    </form>
+                </p>
+            </div>
+        {% endfor %}
+    </div>
+
+    {% if built is not empty %}
+        <h2>Clients this browser has built</h2>
+        <table class="kv">
+            {% for client in built %}
+                <tr>
+                    <th><a href="{{ path('app_forge_profile', {handle: client.handle}) }}">{{ client.handle }}</a></th>
+                    <td>
+                        <code>{{ client.clientId }}</code> · {{ client.name }}
+                        <form class="inline" method="post" action="{{ path('app_forge_delete', {handle: client.handle}) }}">
+                            <button class="button" type="submit">Delete it</button>
+                        </form>
+                        <a href="{{ path('app_home', {from: client.handle}) }}#compose">Take it apart</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+
+    <h2 id="compose">Compose one</h2>
+    <form class="compose" method="post" action="{{ path('app_forge_build') }}">
+        {% if chosen_preset %}<p class="muted">Filled with the preset <code>{{ chosen_preset }}</code>. What
+            is submitted is this form, so anything below can be changed before it is built; it will then be
+            built under a handle of its own and leave the preset where it is.</p>{% endif %}
+
+        <fieldset>
+            <legend>What it is</legend>
+            <label class="field">
+                <span class="field-label">client_name</span>
+                <input type="text" name="client_name" value="{{ filled.client_name|default('') }}" placeholder="What the consent page calls it">
+                <span class="field-help">What the user reads on the consent page (RFC 7591 §2).</span>
+            </label>
+            {{ f.choose('subject_type', choices.subject_types, filled, 'subject_type', 'The kind of "sub" this client sees: the same identifier as everybody else, or one it alone gets (OIDC Core §8).', null) }}
+        </fieldset>
+
+        <fieldset>
+            <legend>What it asks for</legend>
+            <div class="scopes">
+                <span class="field-label">scope</span>
+                <span class="field-help"><code>openid</code> is in every composition, this being a client that signs a user in.</span>
+                {% for scope in choices.scopes %}
+                    <label class="check">
+                        <input type="checkbox" name="scope[]" value="{{ scope }}" {{ scope in filled.scope|default([]) ? 'checked' : '' }}>
+                        <code>{{ scope }}</code>
+                    </label>
+                {% endfor %}
+            </div>
+            {{ f.choose('authorization_details_type', choices.authorization_details_types, filled, 'authorization_details type', 'What it may do, to what and up to how much, instead of a kind of thing (RFC 9396 §2). The provider reads the types it is wired with and no other.', 'none') }}
+            <label class="field">
+                <span class="field-label">authorization_details</span>
+                <textarea name="authorization_details" rows="7" placeholder="[{&quot;type&quot;: ...}]">{{ filled.authorization_details|default('') }}</textarea>
+                <span class="field-help">The JSON array this client sends at the authorization endpoint. The consent page says it in words.</span>
+            </label>
+            {{ f.choose('acr_values', choices.acr_values, filled, 'acr_values', 'The authentication this client asks for (OIDC Core §3.1.2.1): the provider answers with what it got, and a login that cannot reach it is refused.', 'whatever the provider does') }}
+            {{ f.choose('prompt', choices.prompts, filled, 'prompt', 'What it asks of the interaction: a login even if a session is open, a consent again, an account to be chosen.', 'nothing in particular') }}
+        </fieldset>
+
+        <fieldset>
+            <legend>How it proves it is itself</legend>
+            {{ f.choose('token_endpoint_auth_method', choices.authentication, filled, 'token_endpoint_auth_method', 'What the forge draws for it follows: a secret the provider issues, a key it publishes, or a certificate it presents.', null) }}
+            {% for method in choices.authentication %}
+                <p class="field-help"><code>{{ method.name }}</code> — {{ method.describe }}</p>
+            {% endfor %}
+        </fieldset>
+
+        <fieldset>
+            <legend>How the request travels</legend>
+            {{ f.choose('response_mode', choices.response_modes, filled, 'response_mode', null, null) }}
+            {% for mode in choices.response_modes %}
+                <p class="field-help"><code>{{ mode.name }}</code> — {{ mode.describe }}</p>
+            {% endfor %}
+            {{ f.check('pushed', filled, 'Push the request (RFC 9126)', 'The request is handed to the provider server to server, and the browser carries a client identifier and a URI.') }}
+            {{ f.check('require_pushed_authorization_requests', filled, 'Register that it always pushes', 'The provider then refuses a request of this client that was not pushed.') }}
+            {{ f.choose('request_object_signing_alg', choices.request_object_algorithms, filled, 'request_object_signing_alg', 'The request is signed as a request object (RFC 9101 §4), which the forge signs with the key it drew.', 'no request object') }}
+            {{ f.check('require_signed_request_object', filled, 'Register that it always signs its request', 'The provider then reads a request of this client from a signature and from nothing else.') }}
+        </fieldset>
+
+        <fieldset>
+            <legend>What comes back</legend>
+            {{ f.choose('authorization_signed_response_alg', choices.documents.authorization.signing, filled, 'authorization_signed_response_alg', 'JARM §3: the answer is one signed parameter. A signed response mode above takes this one.', 'what the provider signs with') }}
+            {{ f.choose('authorization_encrypted_response_alg', choices.documents.authorization.encryption, filled, 'authorization_encrypted_response_alg', 'And encrypted to a key the forge draws and publishes for it.', 'not encrypted') }}
+            {{ f.choose('id_token_signed_response_alg', choices.documents.id_token.signing, filled, 'id_token_signed_response_alg', null, 'what the provider signs with') }}
+            {{ f.choose('id_token_encrypted_response_alg', choices.documents.id_token.encryption, filled, 'id_token_encrypted_response_alg', 'OIDC Core §3.1.3.7: the ID token arrives as a JWE holding a JWS.', 'not encrypted') }}
+            {{ f.choose('userinfo_signed_response_alg', choices.documents.userinfo.signing, filled, 'userinfo_signed_response_alg', 'OIDC Core §5.3.2: the UserInfo answer becomes an "application/jwt" instead of JSON.', 'plain JSON') }}
+            {{ f.choose('userinfo_encrypted_response_alg', choices.documents.userinfo.encryption, filled, 'userinfo_encrypted_response_alg', null, 'not encrypted') }}
+        </fieldset>
+
+        <fieldset>
+            <legend>What it receives, and how it holds it</legend>
+            {{ f.choose('token_binding', choices.bindings, filled, 'token binding', null, null) }}
+            {% for binding in choices.bindings %}
+                <p class="field-help"><code>{{ binding.name }}</code> — {{ binding.describe }}</p>
+            {% endfor %}
+            {{ f.choose('dpop_signing_alg', choices.dpop_algorithms, filled, 'dpop_signing_alg', 'What the proofs of this login are signed with, for the binding to a key.', 'ES256') }}
+            {{ f.check('tls_client_certificate_bound_access_tokens', filled, 'Register that its tokens are bound to its certificate', 'RFC 8705 §3.4, for a client that presents one without authenticating with it.') }}
+        </fieldset>
+
+        <fieldset>
+            <legend>What a logout reaches</legend>
+            {{ f.check('frontchannel_logout', filled, 'Front-Channel Logout 1.0', 'The logout page of the provider loads a URI of this client in a frame.') }}
+            {{ f.check('backchannel_logout', filled, 'Back-Channel Logout 1.0', 'The provider posts a logout token to this client, wherever the session ended.') }}
+            {{ f.check('logout_session_required', filled, 'And it is told which session ended', 'The provider then names the session in what it sends (§2.2 and §3).') }}
+        </fieldset>
+
+        <p><button class="button" type="submit">Build it and sign in</button></p>
+    </form>
+
+    <h2>What a client cannot ask for</h2>
+    <p class="muted">Seven members of this provider are not offered above, and that is the rule and not an
+        omission: they are written by whoever declares a client in the configuration, or by the
+        registration policy of the tenant, and a client that registers itself is refused rather than
+        obeyed. A client that comes from nowhere gets nothing a declared client does not get by asking for
+        it (decision 0009).</p>
+    <table class="kv">
+        {% for member, what in choices.written_by_the_deployment %}
+            <tr><th><code>{{ member }}</code></th><td>{{ what }}</td></tr>
+        {% endfor %}
+    </table>
+    <p class="muted">So the shape of the access token is the tenant's, and the page of a built client reads
+        it off the token it was issued rather than off what it asked for. The two shapes are seen on the
+        clients the configuration declares, which <code>castor demo --resource-server</code> signs in
+        as.</p>
+
+    <h2>What has no browser</h2>
+    <p class="muted">Some flows of the provider are never clicked, because no browser of this application
+        goes into them: the client is a program, or it is the provider that calls the client back. They are
+        played from the command line of the provider's repository, <code>castor demo --device</code>,
+        <code>--ciba</code>, <code>--service</code>, <code>--assertion</code>, <code>--native</code> and
+        <code>--push</code>, and each one asserts every step. The forge composes a client of the
+        authorization code grant, which is the one a browser plays.</p>
+{% endblock %}

@@ -122,3 +122,43 @@ textarea.token {
 .card.call .button { border: 0; cursor: pointer; font: inherit; font-weight: 600; }
 .card.call pre.answer { white-space: pre-wrap; word-break: break-word; margin-bottom: .5rem; }
 .card.call details summary { color: var(--muted); font-size: .9rem; cursor: pointer; }
+
+/* the forge: a form of one fieldset per family of choices, and the presets above it */
+.presets { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 1rem; }
+.presets .card { margin: 0; }
+.presets .card h2 { font-size: 1rem; }
+.presets .card p { font-size: .9rem; color: var(--muted); }
+
+form.inline { display: inline; margin: 0; }
+form.inline .button { border: 0; cursor: pointer; font: inherit; font-weight: 600; }
+
+form.compose fieldset {
+    border: 1px solid var(--border);
+    border-radius: .6rem;
+    background: var(--panel);
+    margin: 1rem 0;
+    padding: 1rem 1.25rem;
+}
+form.compose legend { color: var(--accent); font-weight: 600; padding: 0 .35rem; }
+form.compose .field { display: block; margin: .75rem 0; }
+form.compose .field-label { display: block; font-weight: 600; font-size: .95rem; }
+form.compose .field-help { display: block; color: var(--muted); font-size: .85rem; }
+form.compose .field.check { display: flex; flex-wrap: wrap; align-items: baseline; gap: .5rem; }
+form.compose .field.check .field-help { flex-basis: 100%; }
+form.compose select,
+form.compose input[type="text"],
+form.compose textarea {
+    width: 100%;
+    max-width: 32rem;
+    margin: .25rem 0;
+    background: #10131b;
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: .4rem;
+    padding: .4rem .5rem;
+    font: inherit;
+}
+form.compose textarea { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .8rem; }
+form.compose .scopes { display: flex; flex-wrap: wrap; gap: .75rem; align-items: baseline; }
+form.compose .scopes .field-label,
+form.compose .scopes .field-help { flex-basis: 100%; }

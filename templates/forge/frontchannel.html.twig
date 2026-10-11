@@ -1,0 +1,16 @@
+{# Front-Channel Logout 1.0 §3: the logout page of the provider loads this page in a frame, so it is a
+   page nobody reads on its own and it says the one thing that matters, whether the session it names was
+   ended here. #}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>{{ ended ? 'Session ended' : 'Nothing to end' }}</title>
+    </head>
+    <body>
+        <p>{{ ended
+            ? 'The session of this browser at ' ~ handle ~ ' was ended, as the provider said it had ended at its end.'
+            : 'Nothing was ended: this request names no session of this provider, or there was none open here.' }}</p>
+        {% if sid %}<p>sid: <code>{{ sid }}</code></p>{% endif %}
+    </body>
+</html>

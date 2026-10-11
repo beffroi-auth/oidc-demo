@@ -1,0 +1,122 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ client.handle }}, a client of the forge{% endblock %}
+
+{% block body %}
+    <h1>{{ client.name }}</h1>
+    <p class="lead">Built here as <code>{{ client.handle }}</code>, registered at
+        <code>{{ provider_uri }}</code> as <code data-client-id="{{ client.clientId }}">{{ client.clientId }}</code>. Nothing of this client was
+        written in the configuration of the provider: it registered itself (RFC 7591), and it can read,
+        replace and delete itself at the URI it was handed (RFC 7592).</p>
+
+    <h2>What this client is</h2>
+    <table class="kv">
+        {% for what, how in described %}
+            <tr><th>{{ what }}</th><td>{{ how }}</td></tr>
+        {% endfor %}
+    </table>
+
+    {% if gaps is not empty %}
+        <div class="card">
+            <h2>What <code>oidc_login</code> could not have served</h2>
+            <p>This composition asks for something Symfony's own authenticator cannot do yet. The items are
+                those of <code>specs/symfony-oauth-oidc-status.md</code>, and the laboratory client of this
+                demonstration closes none of them.</p>
+            <table class="kv">
+                {% for gap in gaps %}
+                    <tr><th><code>{{ gap.code }}</code> {{ gap.what }}</th><td>{{ gap.why }}</td></tr>
+                {% endfor %}
+            </table>
+        </div>
+    {% else %}
+        <div class="card ok">
+            <h2>A Symfony application reaches this one with configuration alone</h2>
+            <p>This composition asks for nothing <code>oidc_login</code> cannot do: an
+                <code>oidc_login</code> firewall with these options signs the same user in, which is what
+                the reference client of this demonstration does on its own firewall. What the forge adds is
+                that the client did not have to exist beforehand.</p>
+        </div>
+    {% endif %}
+
+    {% if user is null %}
+        <div class="card">
+            <h2>This browser is signed in with another client</h2>
+            <p>One firewall holds one session, so the clients of the forge sign in one at a time.</p>
+            <p><a class="button" href="{{ path('app_forge_start', {handle: client.handle}) }}">Sign in with this one</a></p>
+        </div>
+    {% else %}
+        <h2>Who signed in</h2>
+        <table class="kv">
+            <tr><th>sub</th><td><code>{{ user.userIdentifier }}</code></td></tr>
+            {% for claim, value in claims %}
+                <tr><th>{{ claim }}</th><td>{{ value is iterable ? value|json_encode : value }}</td></tr>
+            {% endfor %}
+        </table>
+
+        <h2>What travelled</h2>
+        <p class="muted">One row per hop, in the order it happened, as this client made it. What a hop
+            carried is there when it is something a reader can be shown.</p>
+        {% for hop in hops %}
+            {# one card per hop, named so that the walk of "castor demo --forge" reads the hops of this
+               page and not the other cards of it #}
+            <div class="card hop">
+                <h2>{{ hop.label }}</h2>
+                <p>{{ hop.what }}</p>
+                {% if hop.payload %}
+                    <details>
+                        <summary>What it was</summary>
+                        <pre class="jwt">{{ hop.payload }}</pre>
+                    </details>
+                {% endif %}
+            </div>
+        {% endfor %}
+
+        <h2>What it holds</h2>
+        <table class="kv">
+            <tr><th>token_type</th><td><code>{{ tokens.token_type|default('?') }}</code></td></tr>
+            <tr><th>scope</th><td><code>{{ tokens.scope|default('?') }}</code></td></tr>
+            {% if tokens.confirmation %}
+                <tr><th>bound to</th><td><code>{{ tokens.confirmation }}</code></td></tr>
+            {% endif %}
+            {% if tokens.authorization_details %}
+                <tr><th>authorization_details</th><td><pre class="jwt">{{ tokens.authorization_details|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre></td></tr>
+            {% endif %}
+        </table>
+        <details>
+            <summary>The access token</summary>
+            <pre class="jwt">{{ tokens.access_token|default('') }}</pre>
+        </details>
+        <details>
+            <summary>The ID token</summary>
+            <pre class="jwt">{{ tokens.id_token|default('') }}</pre>
+        </details>
+        {% if tokens.refresh_token %}
+            <details>
+                <summary>The refresh token</summary>
+                <pre class="jwt">{{ tokens.refresh_token }}</pre>
+            </details>
+        {% endif %}
+    {% endif %}
+
+    <h2>Its registration</h2>
+    <details>
+        <summary>What was sent to the registration endpoint (RFC 7591 §2)</summary>
+        <pre>{{ client.registration|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_SLASHES')) }}</pre>
+    </details>
+    <details>
+        <summary>What the provider answered (RFC 7591 §3.2.1), its credentials taken out</summary>
+        <pre>{{ client.answer|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_SLASHES')) }}</pre>
+    </details>
+
+    <p>
+        <a class="button" href="{{ path('app_home', {from: client.handle}) }}#compose">Take it apart and build another</a>
+        <form class="inline" method="post" action="{{ path('app_forge_delete', {handle: client.handle}) }}">
+            <button class="button" type="submit">Delete this client (RFC 7592 §2.3)</button>
+        </form>
+        {% if user is not null %}
+            <form class="inline" method="post" action="{{ logout_path('forge') }}">
+                <button class="button" type="submit">Sign out of the provider too</button>
+            </form>
+        {% endif %}
+    </p>
+{% endblock %}

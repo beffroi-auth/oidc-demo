@@ -1,9 +1,0 @@
-<!DOCTYPE html>
-<html lang="en">
-    <head><meta charset="UTF-8"><title>Front-Channel Logout</title></head>
-    <body>
-        {# loaded in a frame by the logout page of the provider, never looked at by a human #}
-        <p>{{ definition.name }}: {% if ended %}session ended{% else %}nothing to end{% endif %}
-            {% if sid %}(sid {{ sid }}){% endif %}</p>
-    </body>
-</html>

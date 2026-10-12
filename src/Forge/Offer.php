@@ -7,6 +7,7 @@ namespace App\Forge;
 use App\Forge\Flow\Jwt;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
@@ -68,14 +69,29 @@ final readonly class Offer
     public function document(): array
     {
         /** @var array<string, mixed> $document */
-        $document = $this->cache->get('forge.document.' . hash('xxh128', $this->providerUri), function (ItemInterface $item): array {
+        $document = $this->cache->get('forge.document.' . hash('xxh128', $this->providerUri), function (ItemInterface $item, bool &$save): array {
             $item->expiresAfter(3600);
-            $response = $this->httpClient->request('GET', $this->providerUri . '/.well-known/openid-configuration', [
-                'max_redirects' => 0,
-            ]);
-            $values = json_decode($response->getContent(false), true);
 
-            return is_array($values) ? $values : [];
+            try {
+                $response = $this->httpClient->request('GET', $this->providerUri . '/.well-known/openid-configuration', [
+                    'max_redirects' => 0,
+                ]);
+                $values = $response->getStatusCode() === 200 ? json_decode($response->getContent(false), true) : null;
+            } catch (TransportExceptionInterface) {
+                $values = null;
+            }
+
+            if (is_array($values)) {
+                return $values;
+            }
+
+            // A provider that could not be read is one to read again at the next request, and never one
+            // that offers nothing for the hour a document is kept: an empty document has the shape of a
+            // provider that announces nothing, so keeping one makes this page say of the provider what
+            // the network did.
+            $save = false;
+
+            return [];
         });
 
         return $document;

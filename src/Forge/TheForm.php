@@ -52,6 +52,7 @@ final readonly class TheForm
     {
         return [
             'issuer' => $this->offer->issuer(),
+            'reachable' => $this->offer->isReachable(),
             'registers' => is_string($this->offer->document()['registration_endpoint'] ?? null),
             'requires_pushed' => $this->offer->says('require_pushed_authorization_requests'),
             'authentication' => $this->authenticationMethods(),

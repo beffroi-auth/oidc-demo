@@ -34,7 +34,14 @@
         announce is not offered here. The client is registered the moment you build it (RFC 7591), signs
         the user in, and deletes itself when you are done with it (RFC 7592).</p>
 
-    {% if not choices.registers %}
+    {% if not choices.reachable %}
+        <div class="card error">
+            <h2>The document of this provider could not be read</h2>
+            <p>Nothing was obtained from <code>{{ provider_uri }}/.well-known/openid-configuration</code>,
+                so the form below offers nothing: that is this page failing to read the provider and not
+                the provider offering nothing. Check that it is up, then reload.</p>
+        </div>
+    {% elseif not choices.registers %}
         <div class="card error">
             <h2>This provider registers no client</h2>
             <p>Its document announces no <code>registration_endpoint</code>, so nothing can be built here.

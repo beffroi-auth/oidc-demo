@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "058c65af8d0fa2a2f0b5a5eb490ebb3c",
+    "content-hash": "266b2320bd796b63b527c35d2cac3dde",
     "packages": [
         {
             "name": "api-platform/core",
@@ -3877,12 +3877,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/form.git",
-                "reference": "b5f9c212f6ac36cd380639aaa0f8950ce21bbe19"
+                "reference": "84a4fb0021f676e18527f1c5ef81eedbe54f888e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/form/zipball/b5f9c212f6ac36cd380639aaa0f8950ce21bbe19",
-                "reference": "b5f9c212f6ac36cd380639aaa0f8950ce21bbe19",
+                "url": "https://api.github.com/repos/symfony/form/zipball/84a4fb0021f676e18527f1c5ef81eedbe54f888e",
+                "reference": "84a4fb0021f676e18527f1c5ef81eedbe54f888e",
                 "shasum": ""
             },
             "require": {
@@ -3969,7 +3969,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-10-10T14:42:59+00:00"
+            "time": "2026-10-11T14:37:24+00:00"
         },
         {
             "name": "symfony/framework-bundle",
@@ -4706,12 +4706,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/messenger.git",
-                "reference": "3994f392a592c50149c735a6981872f50a9b7ea4"
+                "reference": "8e0078da3900100f134686e3e76efc733be9aef2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/messenger/zipball/3994f392a592c50149c735a6981872f50a9b7ea4",
-                "reference": "3994f392a592c50149c735a6981872f50a9b7ea4",
+                "url": "https://api.github.com/repos/symfony/messenger/zipball/8e0078da3900100f134686e3e76efc733be9aef2",
+                "reference": "8e0078da3900100f134686e3e76efc733be9aef2",
                 "shasum": ""
             },
             "require": {
@@ -4799,7 +4799,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-10-09T14:10:13+00:00"
+            "time": "2026-10-11T14:39:44+00:00"
         },
         {
             "name": "symfony/mime",
@@ -7467,12 +7467,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/twig-bundle.git",
-                "reference": "cbe8d1ae015ffb082213a4d33d9201f1ff61518e"
+                "reference": "6d627820fd38d71cce6425d373bfbf400f7db2cf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/twig-bundle/zipball/cbe8d1ae015ffb082213a4d33d9201f1ff61518e",
-                "reference": "cbe8d1ae015ffb082213a4d33d9201f1ff61518e",
+                "url": "https://api.github.com/repos/symfony/twig-bundle/zipball/6d627820fd38d71cce6425d373bfbf400f7db2cf",
+                "reference": "6d627820fd38d71cce6425d373bfbf400f7db2cf",
                 "shasum": ""
             },
             "require": {
@@ -7545,7 +7545,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-10-10T14:35:44+00:00"
+            "time": "2026-10-11T12:53:27+00:00"
         },
         {
             "name": "symfony/type-info",
@@ -8003,12 +8003,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/yaml.git",
-                "reference": "66d27eae4534dcff415bf6c0e96e5c043cf5cea2"
+                "reference": "2874d1b465669ebe47ec6a0440f2d8091d8c27a8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/yaml/zipball/66d27eae4534dcff415bf6c0e96e5c043cf5cea2",
-                "reference": "66d27eae4534dcff415bf6c0e96e5c043cf5cea2",
+                "url": "https://api.github.com/repos/symfony/yaml/zipball/2874d1b465669ebe47ec6a0440f2d8091d8c27a8",
+                "reference": "2874d1b465669ebe47ec6a0440f2d8091d8c27a8",
                 "shasum": ""
             },
             "require": {
@@ -8073,7 +8073,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-10-09T14:10:13+00:00"
+            "time": "2026-10-11T14:26:56+00:00"
         },
         {
             "name": "twig/extra-bundle",

@@ -9788,6 +9788,7 @@
                 "http_client": {
                     "$ref": "#/$defs/nodes/http_client"
                 },
+                "imports": true,
                 "mailer": {
                     "$ref": "#/$defs/nodes/mailer"
                 },
@@ -9803,6 +9804,7 @@
                 "notifier": {
                     "$ref": "#/$defs/nodes/notifier"
                 },
+                "parameters": true,
                 "property_access": {
                     "$ref": "#/$defs/nodes/property_access"
                 },
@@ -9818,6 +9820,7 @@
                 "serializer": {
                     "$ref": "#/$defs/nodes/serializer"
                 },
+                "services": true,
                 "stimulus": {
                     "$ref": "#/$defs/nodes/stimulus"
                 },
@@ -9872,6 +9875,7 @@
                 "http_client": {
                     "$ref": "#/$defs/nodes/http_client"
                 },
+                "imports": true,
                 "mailer": {
                     "$ref": "#/$defs/nodes/mailer"
                 },
@@ -9884,6 +9888,7 @@
                 "notifier": {
                     "$ref": "#/$defs/nodes/notifier"
                 },
+                "parameters": true,
                 "property_access": {
                     "$ref": "#/$defs/nodes/property_access"
                 },
@@ -9899,6 +9904,7 @@
                 "serializer": {
                     "$ref": "#/$defs/nodes/serializer"
                 },
+                "services": true,
                 "stimulus": {
                     "$ref": "#/$defs/nodes/stimulus"
                 },

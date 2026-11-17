@@ -11,41 +11,7 @@ It is four things at once:
 
 ## What it runs on
 
-Symfony 8.2, which is not tagged: `8.2.x-dev` is the only version of that branch, and `minimum-stability: dev` with `prefer-stable: true` is what resolves it.
-
-Three security packages do not come from Packagist but from a local worktree, mounted as `path` repositories (symbolic links), because the demonstration relies on four commits that are not merged yet:
-
-```
-~/Projects/symfony-oidc-pending                branch oidc-demo-pending
-vendor/symfony/security-core   -> ../../../symfony-oidc-pending/src/Symfony/Component/Security/Core
-vendor/symfony/security-http   -> ../../../symfony-oidc-pending/src/Symfony/Component/Security/Http
-vendor/symfony/security-bundle -> ../../../symfony-oidc-pending/src/Symfony/Bundle/SecurityBundle
-```
-
-| What 8.2 lacks | What the demonstration does with it | Where it is |
-|---|---|---|
-| The `backchannel_logout` option of the `oidc_login` firewall | The back-channel logout of the `main` firewall, played by `castor demo --logout-others` | [#66196](https://github.com/symfony/symfony/pull/66196) |
-| The `dpop` option of `oidc_login`, and the type of the access token | The `fapi` rung of the ladder, which binds its token to a key it holds | [#66239](https://github.com/symfony/symfony/pull/66239), two commits |
-| The `dpop` option of the `access_token` authenticator | The two `api_dpop*` firewalls, which accept a bound token only from whoever proves the key | branch `security-dpop-resource-server`, line `RS-05` of the status document, no pull request open |
-
-Everything else comes from 8.2 as it stands, the `form_post` response and the reading of `acr` included.
-
-Rebuilding the branch on a fresh 8.2:
-
-```bash
-cd ~/Projects/symfony
-git fetch upstream 8.2 \
-  refs/pull/66196/head:refs/remotes/upstream/pr-66196 \
-  refs/pull/66239/head:refs/remotes/upstream/pr-66239 --force
-cd ~/Projects/symfony-oidc-pending
-git checkout -B oidc-demo-pending upstream/8.2
-git cherry-pick upstream/pr-66196                       # the back-channel logout
-git cherry-pick upstream/pr-66239~1 upstream/pr-66239   # DPoP on the client side
-git cherry-pick security-dpop-resource-server           # DPoP at the resource server
-cd ~/Projects/oidc-demo && php bin/console cache:clear
-```
-
-The only conflicts to expect are in the `CHANGELOG.md` files, where the entries add up to one another.
+Symfony 8.2, which is not tagged: `8.2.x-dev` is the only version of that branch, and `minimum-stability: dev` with `prefer-stable: true` is what resolves it. Every package comes from Packagist: the back-channel logout of `oidc_login` ([#66196](https://github.com/symfony/symfony/pull/66196)), its binding of a token to a key ([#66239](https://github.com/symfony/symfony/pull/66239)) and the `dpop` option of the `access_token` authenticator are part of 8.2.
 
 ## The vault
 
@@ -88,3 +54,9 @@ symfony server:log
 - `https://localhost:8002/profile`: a protected page, which starts the flow; it shows the `OidcUser`, the UserInfo claims, and the ID token and access token decoded.
 - `https://localhost:8002/vault`: the vault; it shows `acr`, `amr`, `auth_time`, `sid` and the proofs `oidc_login` recorded on the security token.
 - `https://localhost:8002/login`: `login_path` and `failure_path`, which shows the authentication error.
+
+## Published
+
+The `Dockerfile` builds the demonstration as it is published: FrankenPHP serving `public/` over plain HTTP on port 8080, as `www-data`, behind a proxy that terminates TLS. The workflow `image.yml`, asked for by hand, publishes `ghcr.io/beffroi-auth/oidc-demo` from `main`, for amd64 and arm64.
+
+A container reads its provider and its client from the environment: `APP_SECRET`, `OIDC_PROVIDER_URI`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET` and `OIDC_INTROSPECTION_URI`, and the proxy it trusts from `SYMFONY_TRUSTED_PROXIES`, `SYMFONY_TRUSTED_HEADERS` and `SYMFONY_TRUSTED_HOSTS`. Its client is registered with `https://<host>/oidc/callback`, `https://<host>/` to come back to after a logout, and `https://<host>/oidc/backchannel-logout`, where the provider posts its logout tokens.

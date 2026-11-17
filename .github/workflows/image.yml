@@ -1,0 +1,156 @@
+name: Image
+
+# Asked for by hand, as the image of the provider is: from main it publishes ghcr.io/beffroi-auth/oidc-demo under
+# "main" and "main-<commit>", from any other branch it builds both platforms and publishes nothing. Each platform is
+# built on a runner of its own and pushed by digest, then one index names both.
+on:
+  workflow_dispatch: ~
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  IMAGE: ghcr.io/beffroi-auth/oidc-demo
+  DESCRIPTION: "The demonstration client of Beffroi: a Symfony application signed in by its provider with oidc_login."
+
+jobs:
+  prepare:
+    name: "What is published, and under which tags"
+    runs-on: [self-hosted, kloude-light]
+    outputs:
+      push: ${{ steps.tags.outputs.push }}
+      tags: ${{ steps.tags.outputs.tags }}
+      version: ${{ steps.tags.outputs.version }}
+      created: ${{ steps.tags.outputs.created }}
+    steps:
+      - name: "The tags"
+        id: tags
+        run: |
+          commit="${GITHUB_SHA::7}"
+          if [ "${GITHUB_REF}" = "refs/heads/main" ]; then
+            push=true
+            tags="main main-${commit}"
+            echo "${IMAGE}, version main-${commit}: ${tags}" >> "${GITHUB_STEP_SUMMARY}"
+          else
+            push=false
+            tags=""
+            echo "${GITHUB_REF} is not main: both platforms are built and nothing is published." >> "${GITHUB_STEP_SUMMARY}"
+          fi
+          {
+            echo "push=${push}"
+            echo "tags=${tags}"
+            echo "version=main-${commit}"
+            echo "created=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          } >> "${GITHUB_OUTPUT}"
+
+  build:
+    name: "Build for ${{ matrix.platform }}"
+    needs: prepare
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux/amd64
+            arch: amd64
+            runner: X64
+          - platform: linux/arm64
+            arch: arm64
+            runner: ARM64
+    runs-on: [self-hosted, "${{ matrix.runner }}"]
+    outputs:
+      amd64: ${{ steps.digest.outputs.amd64 }}
+      arm64: ${{ steps.digest.outputs.arm64 }}
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: "Docker Hub, which the base image comes from"
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: "The registry of GitHub"
+        if: needs.prepare.outputs.push == 'true'
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/setup-buildx-action@v4
+      - name: "Build"
+        id: build
+        uses: docker/build-push-action@v7
+        env:
+          DOCKER_BUILD_RECORD_UPLOAD: false
+        with:
+          context: .
+          platforms: ${{ matrix.platform }}
+          labels: |
+            org.opencontainers.image.title=oidc-demo
+            org.opencontainers.image.description=${{ env.DESCRIPTION }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.vendor=Beffroi
+            org.opencontainers.image.licenses=proprietary
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.version=${{ needs.prepare.outputs.version }}
+            org.opencontainers.image.created=${{ needs.prepare.outputs.created }}
+          outputs: ${{ needs.prepare.outputs.push == 'true' && format('type=image,name={0},push-by-digest=true,name-canonical=true,push=true', env.IMAGE) || 'type=cacheonly' }}
+          cache-from: type=gha,scope=oidc-demo-${{ matrix.arch }}
+          cache-to: ${{ needs.prepare.outputs.push == 'true' && format('type=gha,mode=max,scope=oidc-demo-{0},ignore-error=true', matrix.arch) || '' }}
+      - name: "Its digest, for the index"
+        id: digest
+        if: needs.prepare.outputs.push == 'true'
+        env:
+          ARCH: ${{ matrix.arch }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: echo "${ARCH}=${DIGEST}" >> "${GITHUB_OUTPUT}"
+
+  merge:
+    name: "The index of both platforms, under its tags"
+    needs: [prepare, build]
+    if: needs.prepare.outputs.push == 'true'
+    runs-on: [self-hosted, kloude-light]
+    permissions:
+      packages: write
+    steps:
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/setup-buildx-action@v4
+        with:
+          driver: docker
+      - name: "Write the index and tag it"
+        env:
+          AMD64: ${{ needs.build.outputs.amd64 }}
+          ARM64: ${{ needs.build.outputs.arm64 }}
+          TAGS: ${{ needs.prepare.outputs.tags }}
+          SOURCE: ${{ github.server_url }}/${{ github.repository }}
+          REVISION: ${{ github.sha }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+          CREATED: ${{ needs.prepare.outputs.created }}
+        run: |
+          read -ra names <<< "${TAGS}"
+          options=()
+          for name in "${names[@]}"; do options+=(--tag "${IMAGE}:${name}"); done
+          if [ -z "${AMD64}" ] || [ -z "${ARM64}" ]; then
+            echo "::error title=A platform named no digest::amd64 is '${AMD64}' and arm64 is '${ARM64}': an index of one platform would be tagged, so nothing is."
+            exit 1
+          fi
+          docker buildx imagetools create "${options[@]}" \
+            --annotation "index:org.opencontainers.image.title=oidc-demo" \
+            --annotation "index:org.opencontainers.image.description=${DESCRIPTION}" \
+            --annotation "index:org.opencontainers.image.source=${SOURCE}" \
+            --annotation "index:org.opencontainers.image.revision=${REVISION}" \
+            --annotation "index:org.opencontainers.image.version=${VERSION}" \
+            --annotation "index:org.opencontainers.image.created=${CREATED}" \
+            "${IMAGE}@${AMD64}" "${IMAGE}@${ARM64}"
+          docker buildx imagetools inspect "${IMAGE}:${names[0]}"

@@ -1,0 +1,11 @@
+{
+	frankenphp
+}
+
+# Plain HTTP: the proxy in front terminates TLS and says so in X-Forwarded-Proto, which Symfony reads from the
+# addresses SYMFONY_TRUSTED_PROXIES names.
+{$SERVER_NAME::8080} {
+	root /app/public
+	encode zstd br gzip
+	php_server
+}

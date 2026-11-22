@@ -14,7 +14,7 @@ use App\Forge\Offer;
  * signed as a request object (RFC 9101 §4).
  *
  * The three are composed apart because they are apart on the wire: a request can be pushed in clear, put
- * in the URL signed, or pushed and signed, which is what the last rung of the ladder did.
+ * in the URL signed, or pushed and signed, which is what the FAPI 2.0 presets do.
  */
 final readonly class TheRequest
 {

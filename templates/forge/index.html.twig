@@ -74,15 +74,15 @@
     {% endif %}
 
     <h2>Presets</h2>
-    <p class="muted">Eight compositions written down, five of them the rungs of the ladder this page
-        replaced. A preset fills the form below, and building it replaces the client of the same name.</p>
+    <p class="muted">Eight compositions written down. A preset fills the form below, and building it
+        replaces the client of the same name.</p>
     <div class="presets">
         {% for preset in presets %}
             <div class="card preset">
                 <h2>{{ preset.name }}</h2>
                 <p>{{ preset.what }}</p>
                 <p>
-                    <a class="button" href="{{ path('app_home', {preset: preset.slug}) }}#compose">Fill the form</a>
+                    <a class="button" href="{{ path('app_forge', {preset: preset.slug}) }}#compose">Fill the form</a>
                     <form class="inline" method="post" action="{{ path('app_forge_build') }}">
                         <input type="hidden" name="preset" value="{{ preset.slug }}">
                         <button class="button" type="submit">Build and sign in</button>
@@ -103,7 +103,7 @@
                         <form class="inline" method="post" action="{{ path('app_forge_delete', {handle: client.handle}) }}">
                             <button class="button" type="submit">Delete it</button>
                         </form>
-                        <a href="{{ path('app_home', {from: client.handle}) }}#compose">Take it apart</a>
+                        <a href="{{ path('app_forge', {from: client.handle}) }}#compose">Take it apart</a>
                     </td>
                 </tr>
             {% endfor %}

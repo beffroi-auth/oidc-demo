@@ -16,11 +16,9 @@ use Symfony\Component\DependencyInjection\Attribute\AsDecorator;
  * (ScopesOfTheOperation), so an operation whose scope changes says the new one, and an operation that
  * requires none says nothing.
  *
- * It goes in the description of the operation and not in a security requirement of the document, because
- * the scopes of a requirement only mean something under an "oauth2" or an "openIdConnect" scheme (OpenAPI
- * 3.1 section 4.8.30): the scheme of this API is "http" with the "bearer" scheme, where the only valid
- * requirement is an empty one. What the token has to carry is told in words rather than in a field that
- * would have to lie about how it is obtained.
+ * OpenAPI 3.1 §4.8.30: the scopes are those of the "oauth" scheme, whose flow obtains them; the
+ * "bearer" scheme carries a token obtained elsewhere, where the only valid requirement is an empty one.
+ * The sentence in the description says the same to whoever reads the page rather than the document.
  */
 #[AsDecorator('api_platform.metadata.resource.metadata_collection_factory')]
 final readonly class ScopesInTheDocument implements ResourceMetadataCollectionFactoryInterface
@@ -54,7 +52,9 @@ final readonly class ScopesInTheDocument implements ResourceMetadataCollectionFa
 
                 $documented = $documented instanceof Documented ? $documented : new Documented();
                 $operations->add($name, $operation->withOpenapi(
-                    $documented->withDescription(self::describe($documented->getDescription(), $operation, $scopes)),
+                    $documented
+                        ->withDescription(self::describe($documented->getDescription(), $operation, $scopes))
+                        ->withSecurity([['oauth' => $scopes], ['bearer' => []]]),
                 ));
             }
 

@@ -38,7 +38,7 @@ final class ApiCallsController extends AbstractController
 
         return $this->render('demo/api_calls.html.twig', [
             'calls' => $this->calls->all(),
-            'access_token' => $token?->getAttribute('oidc_access_token'),
+            'access_token' => $token?->getAttribute('oauth2_access_token'),
             'client_id' => $this->clientId,
             'origin' => $request->getSchemeAndHttpHost(),
         ]);

@@ -1,0 +1,76 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ feature.client.title }} · Beffroi demo{% endblock %}
+
+{% block body %}
+    <div class="eyebrow">{{ group.title }}</div>
+    <h1>{{ feature.client.title }}</h1>
+    <p class="does">{{ feature.client.does }}</p>
+
+    <div class="facing">
+        <section class="card" aria-label="The client">
+            <div class="card-head">
+                <span class="label">Client</span>
+                {% if view.clientId %}
+                    <span class="tag accent" title="Its client_id at the provider">{{ view.clientId|length > 28 ? view.clientId|slice(0, 26) ~ '…' : view.clientId }}</span>
+                {% else %}
+                    <span class="tag">not registered yet</span>
+                {% endif %}
+            </div>
+            <h3>{{ view.client }}</h3>
+            <p class="muted small">{{ view.source }}</p>
+            <pre class="config">{% for line in view.lines %}<span class="line{{ line.hl ? ' hl' }}">{{ line.text }}</span>{% endfor %}</pre>
+
+            {% if view.notice %}
+                <p class="notice{{ view.offered ? '' : ' error' }}">{{ view.notice }}</p>
+            {% endif %}
+
+            <div class="actions">
+                <form method="post" action="{{ path('app_feature_run', {slug: feature.slug}) }}">
+                    {% for name, value in feature.client.runFields %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endfor %}
+                    <button class="button primary" type="submit"{{ view.offered ? '' : ' disabled' }}>▶ Run</button>
+                </form>
+                {% if view.page %}
+                    <a class="button small" href="{{ view.page }}">{{ view.pageLabel }}</a>
+                {% endif %}
+            </div>
+        </section>
+
+        <section class="card" aria-label="The proof">
+            <div class="card-head">
+                <span class="label">Proof</span>
+                {% if view.run and view.run.at %}<span class="tag">{{ view.run.at|date('H:i:s') }}</span>{% endif %}
+            </div>
+            {% if view.waiting %}
+                <div class="waiting" data-controller="poll" data-poll-url-value="{{ path('app_feature_poll', {slug: feature.slug}) }}" data-poll-interval-value="{{ view.waiting.interval }}">
+                    <div class="verdict"><span class="sq idle pulse"></span> Waiting for you</div>
+                    <p>{{ view.waiting.says }}</p>
+                    {% if view.waiting.code %}<p class="code" data-user-code>{{ view.waiting.code }}</p>{% endif %}
+                    {% if view.waiting.link %}<p><a class="button primary" href="{{ view.waiting.link }}" target="_blank" rel="noopener">{{ view.waiting.linkLabel }} ↗</a></p>{% endif %}
+                </div>
+            {% elseif view.run is null %}
+                <p class="empty">{{ view.hint }}</p>
+            {% else %}
+                <div class="verdict" data-verdict="{{ view.run.worked ? 'works' : 'failed' }}">
+                    <span class="sq {{ view.run.worked ? 'ok' : 'ko' }}"></span>
+                    {{ view.run.worked ? 'It works' : 'It failed' }}
+                </div>
+                {% if view.run.why %}
+                    <p class="notice error">{{ view.run.why }}</p>
+                {% endif %}
+                <ol class="proofs">
+                    {% for proof in view.run.proofs %}
+                        <li>
+                            <span class="sq {{ proof.ok ?? true ? 'ok' : 'ko' }}"></span>
+                            <span class="step">{{ proof.label }}</span>
+                            <span class="what">{{ proof.what }}</span>
+                            {% if proof.payload %}
+                                <details><summary>what it was</summary><pre class="jwt">{{ proof.payload }}</pre></details>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ol>
+            {% endif %}
+        </section>
+    </div>
+{% endblock %}

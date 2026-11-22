@@ -13,9 +13,9 @@ use Symfony\Component\Security\Http\Oidc\OidcDiscovery;
 /**
  * Exercises the "oidc_login" authenticator of Symfony against the provider this demonstration is written
  * for, whose issuer is the only thing it is configured with: the profile of a signed-in user, the vault
- * that asks for a phishing-resistant sign-in, and the page a failed login lands on. The ladder of clients
- * serves the home page (LadderController), and the routes behind an access token serve the resource server
- * (ApiController).
+ * that asks for a phishing-resistant sign-in, and the page a failed login lands on. The tree of features
+ * serves the home page (ShowcaseController), and the routes behind an access token serve the resource
+ * server (ApiController).
  */
 final class DemoController extends AbstractController
 {
@@ -48,9 +48,9 @@ final class DemoController extends AbstractController
             'claims' => $this->standardClaims($user),
             'additional_claims' => $user->getAdditionalClaims(),
             'id_token' => $token?->getAttribute('oidc_id_token'),
-            'access_token' => $token?->getAttribute('oidc_access_token'),
+            'access_token' => $token?->getAttribute('oauth2_access_token'),
             'id_token_claims' => self::decodeJwt($token?->getAttribute('oidc_id_token')),
-            'access_token_claims' => self::decodeJwt($token?->getAttribute('oidc_access_token')),
+            'access_token_claims' => self::decodeJwt($token?->getAttribute('oauth2_access_token')),
             'provider_uri' => $this->providerUri,
         ]);
     }

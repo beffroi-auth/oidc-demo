@@ -8,17 +8,12 @@
 api_platform:
     title: 'Invoices of the demonstration'
     description: |
-        The invoices of whoever the access token names, served behind the introspection endpoint of the
-        provider (RFC 7662). Every operation needs a token and says which scope that token has to carry.
+        The invoices of whoever the access token names. Every operation says the scope it needs.
 
-        The token to present is any one this demonstration handed you: the /profile page of its main
-        firewall shows one, and so does the page of each rung of the ladder under /c/. The provider
-        describes a token to the client it was issued to and to no other (RFC 7662 section 2.2), so this
-        API asks it as each client whose secret the demonstration holds, and the first answer that
-        describes the token is the one its firewall reads. The two rungs that prove a key instead of
-        sharing a secret, /c/key/ and /c/fapi/, are the exception: their tokens are refused here, because
-        asking about them would mean signing an assertion. `castor demo --api` of the provider's
-        repository plays the whole thing from the command line.
+        Authorize with OAuth 2.0: Swagger UI signs you in at the provider as a public client (PKCE) and
+        asks for a token addressed to this API (RFC 8707), which the API verifies itself (RFC 9068).
+        A token of the demonstration's own clients works too, pasted under "bearer": the API asks
+        the provider about it (RFC 7662).
     version: 1.0.0
 
     # Where the resources are, and nowhere else: this application has no Doctrine entity and this API
@@ -40,11 +35,22 @@ api_platform:
         json: ['application/json']
         html: ['text/html']
 
-    # What the "Authorize" button of the documentation asks for: the bearer token of RFC 6750 section 2.1,
-    # the one scheme this API accepts. Whoever reads the page pastes an access token the demonstration
-    # handed them and the page then sends it on every operation, as a client would. The flow of an
-    # authorization code is not offered in the page: it runs in a browser, so the client it signed in as
-    # would hold its secret there, which is not what a page of a demonstration teaches.
+    # What the "Authorize" button of the documentation offers. OAuth 2.0 first: Swagger UI runs the
+    # authorization code flow itself, as a public client proving its code with PKCE (RFC 7636), its
+    # endpoints read from the discovery document of the provider and its client identifier from the client
+    # the demonstration registered for it (src/Api/OpenApi/TheProviderOfTheFlow.php,
+    # templates/bundles/ApiPlatformBundle/SwaggerUi/index.html.twig). Then the bearer token of RFC 6750
+    # section 2.1, pasted by hand.
+    oauth:
+        enabled: true
+        type: oauth2
+        flow: authorizationCode
+        pkce: true
+        scopes:
+            profile: 'Read the account the token names'
+            invoices.read: 'Read the invoices'
+            invoices.pay: 'Pay an invoice'
+            invoices.write: 'Write an invoice'
     swagger:
         http_auth:
             bearer:

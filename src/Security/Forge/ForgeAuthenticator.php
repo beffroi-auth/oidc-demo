@@ -7,6 +7,7 @@ namespace App\Security\Forge;
 use App\Forge\BuiltClients;
 use App\Forge\Flow\FlowClient;
 use App\Forge\ForgeException;
+use App\Showcase\Runs;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -26,9 +27,8 @@ use Symfony\Component\Security\Http\SecurityRequestAttributes;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
 
 /**
- * The one firewall of the clients the forge builds (beffroi#582), in place of the five "oidc_login" ones
- * the ladder of rungs had: a client born at runtime cannot be a firewall of the configuration, so a
- * composition is always played by this authenticator.
+ * The one firewall of the clients the forge builds (beffroi#582): a client born at runtime cannot be a
+ * firewall of the configuration, so a composition is always played by this authenticator.
  *
  * It decides nothing of the flow. Which client this request belongs to is the handle in its path, what
  * that client does is its composition, and the two requests of the flow are FlowClient::start() and
@@ -59,6 +59,7 @@ final class ForgeAuthenticator implements AuthenticatorInterface, Authentication
         private readonly FlowClient $flow,
         private readonly BuiltClients $clients,
         private readonly UrlGeneratorInterface $urlGenerator,
+        private readonly Runs $runs,
     ) {
     }
 
@@ -78,6 +79,7 @@ final class ForgeAuthenticator implements AuthenticatorInterface, Authentication
             $started = $this->flow->start($this->clients->of($handle));
         } catch (ForgeException $exception) {
             $this->session($request)->set(SecurityRequestAttributes::AUTHENTICATION_ERROR, new CustomUserMessageAuthenticationException($exception->getMessage()));
+            $this->runs->failed($handle, $exception->getMessage());
 
             return new RedirectResponse($this->loginPath($handle));
         }
@@ -130,6 +132,9 @@ final class ForgeAuthenticator implements AuthenticatorInterface, Authentication
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
         $handle = (string) $token->getAttribute(self::HANDLE_ATTRIBUTE);
+        /** @var list<array{label: string, what: string, payload: string|null}> $hops */
+        $hops = $token->getAttribute(self::HOPS_ATTRIBUTE);
+        $this->runs->worked($handle, $hops);
         $target = $this->getTargetPath($this->session($request), $firewallName);
         $this->removeTargetPath($this->session($request), $firewallName);
 
@@ -142,6 +147,13 @@ final class ForgeAuthenticator implements AuthenticatorInterface, Authentication
     {
         $this->session($request)->set(SecurityRequestAttributes::AUTHENTICATION_ERROR, $exception);
         $handle = $this->handle($request);
+        if ($handle !== null) {
+            // what travelled before it failed is what start() left for the callback
+            $remembered = $this->session($request)->get($this->sessionKey($handle));
+            /** @var list<array{label: string, what: string, payload: string|null}> $hops */
+            $hops = is_array($remembered) && is_array($remembered['hops'] ?? null) ? $remembered['hops'] : [];
+            $this->runs->failed($handle, strtr($exception->getMessageKey(), $exception->getMessageData()), $hops);
+        }
 
         return new RedirectResponse($handle === null
             ? $this->urlGenerator->generate('app_home')

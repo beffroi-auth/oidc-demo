@@ -8,10 +8,8 @@ use App\Api\PresentedToken;
 use App\ApiResource\Account;
 
 /**
- * Who the token names, as the provider described it, and how long this API is willing to go on believing
- * it: the lifetime is the one the firewall caches an introspection response for, read from the one place
- * it is written (config/services.yaml), so that the answer cannot say another figure than the firewall
- * applies.
+ * Who the token names, and how this API came to believe it: verified offline when it is addressed to this
+ * API, or described by the provider, whose answer the firewall keeps a few seconds (config/services.yaml).
  *
  * @implements ProviderInterface<Account>
  */
@@ -29,10 +27,9 @@ final readonly class AccountProvider implements ProviderInterface
             sub: $this->token->subject(),
             scope: $this->token->scopes(),
             clientId: $this->token->clientId(),
-            checkedBy: sprintf(
-                'introspection at the provider (RFC 7662), the answer of an active token kept at most %d seconds',
-                $this->introspectionCacheTtl,
-            ),
+            checkedBy: str_starts_with($this->token->checkedBy(), 'introspected')
+                ? sprintf('%s, the answer of an active token kept at most %d seconds', $this->token->checkedBy(), $this->introspectionCacheTtl)
+                : $this->token->checkedBy(),
         );
     }
 }

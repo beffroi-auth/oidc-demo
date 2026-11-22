@@ -1,28 +1,34 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Vault{% endblock %}
+{% block title %}Vault · Beffroi demo{% endblock %}
 
 {% block body %}
-    <h1>Vault</h1>
-    <p class="lead">A route protected by <code>REQUIRES_PHR</code>: the ID token of the session carries <code>acr=phr</code>, a phishing-resistant login.</p>
+    <div class="eyebrow">Sign in · Passkey step-up</div>
+    <h1>The vault</h1>
+    <p class="does">You are in: this page demands <code>acr=phr</code>, and the provider signed you in with a passkey.</p>
 
-    <div class="card ok">
-        <table class="kv">
-            <tr><th>acr</th><td><code data-acr>{{ acr }}</code></td></tr>
-            <tr><th>amr</th><td><code data-amr>{{ amr|json_encode }}</code></td></tr>
-            <tr><th>auth_time</th><td><code data-auth-time>{{ auth_time }}</code>{% if auth_time %} ({{ auth_time|date('c') }}){% endif %}</td></tr>
-            <tr><th>sid</th><td><code data-sid>{{ sid }}</code></td></tr>
-        </table>
+    <div class="facing">
+        <section class="card">
+            <div class="card-head"><span class="label">What oidc_login kept</span></div>
+            <table class="kv">
+                <tr><th>acr</th><td><code data-acr>{{ acr }}</code></td></tr>
+                <tr><th>amr</th><td><code data-amr>{{ amr|json_encode }}</code></td></tr>
+                <tr><th>auth_time</th><td><code data-auth-time>{{ auth_time }}</code>{% if auth_time %} {{ auth_time|date('H:i:s') }}{% endif %}</td></tr>
+                <tr><th>sid</th><td><code data-sid>{{ sid }}</code></td></tr>
+            </table>
+            <div class="actions">
+                <a class="button small" href="{{ path('app_feature', {slug: 'passkey'}) }}">Its configuration</a>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="card-head"><span class="label">Proofs on the security token</span></div>
+            <table class="kv">
+                {% for method, at in proofs %}
+                    <tr><th>{{ method }}</th><td><code>{{ at }}</code> {{ at|date('H:i:s') }}</td></tr>
+                {% endfor %}
+            </table>
+            <details><summary>the ID token</summary><pre>{{ id_token_claims|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_SLASHES')) }}</pre></details>
+        </section>
     </div>
-
-    <h2>Proofs on the security token</h2>
-    <p class="muted">What <code>oidc_login</code> recorded from <code>amr</code> and <code>auth_time</code> (<code>TokenInterface::getAuthenticationProofs()</code>).</p>
-    <table class="kv">
-        {% for method, at in proofs %}
-            <tr><th>{{ method }}</th><td><code>{{ at }}</code> ({{ at|date('c') }})</td></tr>
-        {% endfor %}
-    </table>
-
-    <h2>ID token</h2>
-    <pre>{{ id_token_claims|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_SLASHES')) }}</pre>
 {% endblock %}

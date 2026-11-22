@@ -181,6 +181,14 @@ services:
                 - { client_id: '%env(DEMO_OPAQUE_CLIENT_ID)%', secret: '%env(DEMO_OPAQUE_SECRET)%' }
                 - { client_id: '%env(DEMO_RAR_CLIENT_ID)%', secret: '%env(DEMO_RAR_SECRET)%' }
 
+    # The two handlers the firewalls api_v1_addressed_here and api_v1_described build, chosen between for
+    # each token presented to the API (config/packages/security.yaml).
+    App\Api\AddressedHereOrDescribed:
+        arguments:
+            $addressedHere: '@security.access_token_handler.api_v1_addressed_here'
+            $described: '@security.access_token_handler.api_v1_described'
+            $resource: '%env(API_RESOURCE)%'
+
     App\Api\TheScopeOfTheOperation:
         arguments:
             $realm: '%app.api.realm%'
@@ -188,3 +196,46 @@ services:
     App\State\AccountProvider:
         arguments:
             $introspectionCacheTtl: '%app.api.introspection_cache_ttl%'
+
+    # The tree of features: the configuration a panel shows of the reference client is the file that
+    # configures it, and the vault answers for the classes of its policy.
+    App\Showcase\Reference\SecurityConfiguration:
+        arguments:
+            $file: '%kernel.project_dir%/config/packages/security.yaml'
+
+    App\Showcase\Reference\StepUp:
+        arguments:
+            $acceptedClasses: '%app.acr.accepted_classes%'
+
+    App\Api\OpenApi\TheProviderOfTheFlow:
+        arguments:
+            $resource: '%env(API_RESOURCE)%'
+
+    App\Showcase\RegisteredClients:
+        arguments:
+            $pool: '@app.forge_clients'
+
+    App\Showcase\Api\ApiJournal:
+        arguments:
+            $pool: '@cache.app'
+
+    # The grants that need no browser at the client: what they ask a token for is the API
+    # (RFC 8707 §2), the exchange is granted by an initial access token of its own, and the JWT bearer
+    # grant presents assertions of an issuer this demonstration plays.
+    App\Showcase\Grant\ClientCredentials:
+        arguments:
+            $resource: '%env(API_RESOURCE)%'
+
+    App\Showcase\Grant\TokenExchange:
+        arguments:
+            $resource: '%env(API_RESOURCE)%'
+            $exchangeInitialAccessToken: '%env(EXCHANGE_INITIAL_ACCESS_TOKEN)%'
+
+    App\Showcase\Grant\JwtBearer:
+        arguments:
+            $resource: '%env(API_RESOURCE)%'
+
+    App\Showcase\Grant\AssertionIssuer:
+        arguments:
+            $pool: '@app.forge_clients'
+            $issuer: '%env(JWT_BEARER_ISSUER)%'

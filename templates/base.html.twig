@@ -3,48 +3,45 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>{% block title %}OIDC login demo{% endblock %}</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>🔐</text></svg>">
+        <title>{% block title %}Beffroi demo{% endblock %}</title>
+        <link rel="icon" href="{{ asset('images/favicon.svg') }}" type="image/svg+xml">
+        <meta name="theme-color" content="#f2f4f6">
         {% block javascripts %}
             {% block importmap %}{{ importmap('app') }}{% endblock %}
         {% endblock %}
     </head>
     <body>
         <header class="topbar">
-            <a class="brand" href="{{ path('app_home') }}">🔐 oidc_login demo</a>
+            <a class="brand" href="{{ path('app_home') }}">
+                <img src="{{ asset('images/beffroi-lockup-S-bichrome.svg') }}" alt="Beffroi">
+                <span>Demo</span>
+            </a>
+            <span class="provider" title="The provider every client here signs in at">
+                <span class="sq {{ provider.reachable ? 'ok' : 'ko' }}"></span>{{ provider.issuer }}
+            </span>
             <nav>
-                {# the page of a built client knows the firewall it belongs to and says so itself #}
                 {% block topbar_nav %}
-                    {# The pages of the demonstration are listed whether or not a session is open: each one
-                       is behind the firewall it belongs to, so following it when there is no session is how
-                       a sign-in starts, which is what this demonstration is for. "Vault" asks for a
-                       phishing-resistant one and says so by sending the browser back for a passkey. #}
-                    {% if app.user %}<span class="who">{{ app.user.userIdentifier }}</span>{% endif %}
+                    {% if app.user %}<span class="who">{{ app.user.userIdentifier|slice(0, 18) }}</span>{% endif %}
                     <a href="{{ path('app_profile') }}">Profile</a>
                     <a href="{{ path('app_api_calls') }}">API calls</a>
-                    <a href="{{ path('app_vault') }}">Vault</a>
-                    <a href="{{ path('app_home') }}">The forge</a>
+                    <a href="{{ path('app_forge') }}">Forge</a>
                     {% if app.user %}
-                        {# A logout is posted: as a link, Turbo prefetches it on hover and fires it on
-                           its own. The form is written by hand for as long as the installed twig-bridge
-                           has no "logout_form()" to build it. #}
+                        {# a logout is posted, never followed as a link #}
                         <form class="logout" method="post" action="{{ logout_path('main') }}">
-                            <button class="button" type="submit">Sign out</button>
+                            <button class="button small" type="submit">Sign out</button>
                         </form>
                     {% else %}
-                        <a class="button" href="{{ path('app_profile') }}">Sign in</a>
+                        <a class="button small primary" href="{{ path('app_profile') }}">Sign in</a>
                     {% endif %}
                 {% endblock %}
             </nav>
         </header>
 
-        <main>
-            {% block body %}{% endblock %}
-        </main>
-
-        <footer>
-            <a href="https://github.com/symfony/symfony/pull/64954">symfony/symfony#64954</a> ·
-            <code>{{ provider_uri|default('') }}</code>
-        </footer>
+        <div class="shell">
+            {% include 'showcase/_tree.html.twig' %}
+            <main class="panel">
+                {% block body %}{% endblock %}
+            </main>
+        </div>
     </body>
 </html>

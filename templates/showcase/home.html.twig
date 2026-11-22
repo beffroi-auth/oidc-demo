@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    {% if deleted %}
+        {# what the provider answered the deletion of a client of the forge (RFC 7592 §2.3) #}
+        <p class="notice" data-deleted="{{ deleted }}" data-answered="{{ answered }}">
+            <code>{{ deleted }}</code> deleted: the provider answered {{ answered }}.
+        </p>
+    {% endif %}
+
+    <div class="eyebrow">{{ provider.issuer }}</div>
+    <h1>Every feature, a client that proves it.</h1>
+    <p class="does">Pick a feature on the left. Its client shows its configuration, then runs against the
+        provider and ticks every step it took.</p>
+
+    <ol class="steps">
+        <li><strong>Pick</strong><br><span class="muted">a feature in the tree</span></li>
+        <li><strong>Read</strong><br><span class="muted">the configuration that makes it</span></li>
+        <li><strong>Run</strong><br><span class="muted">and watch each step ticked</span></li>
+    </ol>
+
+    <p><a class="button primary" href="{{ path('app_feature', {slug: 'oidc-login'}) }}">Start with Symfony's oidc_login</a></p>
+{% endblock %}

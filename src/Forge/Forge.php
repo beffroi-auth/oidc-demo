@@ -162,20 +162,25 @@ final readonly class Forge
     }
 
     /**
+     * RFC 7591 §3: any registration, authorised with the initial access token this demonstration holds or
+     * with another one, the members a token grants its clients being the token's (decision 0009). What the
+     * provider answered is given back whole, its credentials included.
+     *
      * @param array<string, mixed> $registration
      *
      * @return array<string, mixed>
      *
      * @throws ForgeException when the provider refuses it
      */
-    private function register(array $registration): array
+    public function register(array $registration, ?string $initialAccessToken = null): array
     {
+        $initialAccessToken ??= $this->initialAccessToken;
         $options = [
             'max_redirects' => 0,
             'json' => $registration,
         ];
-        if ($this->holdsAnInitialAccessToken()) {
-            $options['auth_bearer'] = $this->initialAccessToken;
+        if ($initialAccessToken !== '') {
+            $options['auth_bearer'] = $initialAccessToken;
         }
 
         $response = $this->httpClient->request('POST', $this->offer->endpoint('registration_endpoint'), $options);
@@ -186,7 +191,7 @@ final readonly class Forge
         }
         if ($response->getStatusCode() !== 201) {
             throw new ForgeException(sprintf(
-                'The provider refused this composition (%d %s): %s',
+                'The provider refused this registration (%d %s): %s',
                 $response->getStatusCode(),
                 $values['error'] ?? '',
                 $values['error_description'] ?? $body,

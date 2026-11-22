@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Forge;
 
 /**
- * A composition somebody wrote down, so that what the ladder of rungs showed can still be reached in one
- * click: a slug, what it is called, the sentence that says what it is for, and the form it fills.
+ * A composition somebody wrote down, so that a client worth showing is reached in one click: a slug, what
+ * it is called, the line that says what the client does, and the form it fills.
  *
  * A preset is nothing but a filled form: it is submitted the way a form filled by hand is, read by
  * Composition::read() like any other, and it can be taken apart on the page before it is built. Nothing

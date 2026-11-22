@@ -1,5 +1,11 @@
 twig:
     file_name_pattern: '*.twig'
+    globals:
+        # the tree of features and the provider are on every page
+        showcase: '@App\Showcase\Catalogue'
+        provider: '@App\Forge\Offer'
+        # the client Swagger UI signs in as, known once the demonstration registered it
+        swagger_client: '@App\Showcase\Api\SwaggerClient'
 
 when@test:
     twig:

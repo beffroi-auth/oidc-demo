@@ -1,164 +1,804 @@
-:root {
-    --bg: #0f1117;
-    --panel: #171a23;
-    --border: #262b38;
-    --text: #e6e8ee;
-    --muted: #98a0b3;
-    --accent: #8b7dff;
-    --ok: #3ddc97;
-    --error: #ff6b6b;
+/*
+ * The look of the demonstration, after the brand guidelines of Beffroi: paper ground and ink text, one
+ * accent, flat colour, 2 px rules and chamfered corners; Chakra Petch for headings and buttons only,
+ * Archivo for reading, Martian Mono for values. Signal lights a status square and nothing else.
+ */
+
+@font-face {
+    font-display: swap;
+    font-family: "Archivo";
+    font-stretch: 62% 125%;
+    font-style: normal;
+    font-weight: 100 900;
+    src: url("../fonts/archivo.woff2") format("woff2");
 }
 
-* { box-sizing: border-box; }
+@font-face {
+    font-display: swap;
+    font-family: "Archivo";
+    font-stretch: 62% 125%;
+    font-style: italic;
+    font-weight: 100 900;
+    src: url("../fonts/archivo-italic.woff2") format("woff2");
+}
+
+@font-face {
+    font-display: swap;
+    font-family: "Martian Mono";
+    font-stretch: 75% 112.5%;
+    font-style: normal;
+    font-weight: 100 800;
+    src: url("../fonts/martian-mono.woff2") format("woff2");
+}
+
+@font-face {
+    font-display: swap;
+    font-family: "Chakra Petch";
+    font-style: normal;
+    font-weight: 600;
+    src: url("../fonts/chakra-petch-semibold.woff2") format("woff2");
+}
+
+:root {
+    --ink: #0c1016;
+    --paper: #f2f4f6;
+    --surface: #e6e9ee;
+    --field: #ffffff;
+    --accent: #2f45ff;
+    --accent-100: #e7eaff;
+    --accent-200: #cfd5ff;
+    --accent-600: #2336e0;
+    --accent-ink: #1b2bb8;
+    --cold-light: #a9b3ff;
+    --signal: #c6f432;
+    --error: #b3261e;
+    --muted: rgba(12, 16, 22, 0.72);
+    --divider: rgba(12, 16, 22, 0.36);
+    --hairline: rgba(12, 16, 22, 0.12);
+    --grid: rgba(47, 69, 255, 0.07);
+
+    --font-heading: "Chakra Petch", Arial, sans-serif;
+    --font-body: "Archivo", Arial, sans-serif;
+    --font-mono: "Martian Mono", Consolas, ui-monospace, monospace;
+
+    --rule: 2px;
+    --cut-tag: 7px;
+    --cut-button: 10px;
+    --cut-card: 14px;
+    --tree-width: 19rem;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.5;
+}
 
 body {
     margin: 0;
-    background: var(--bg);
-    color: var(--text);
-    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
+
+a {
+    color: var(--accent-ink);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+}
+
+a:hover {
+    color: var(--accent);
+}
+
+h1, h2, h3 {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    line-height: 1.15;
+    margin: 0;
+}
+
+h1 {
+    font-size: 2.1rem;
+}
+
+h2 {
+    font-size: 1.15rem;
+    margin: 2rem 0 0.75rem;
+}
+
+h3 {
+    font-size: 1rem;
+}
+
+code, pre, .mono {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+}
+
+p {
+    margin: 0.5rem 0;
+}
+
+.chamfer {
+    clip-path: polygon(0 0, calc(100% - var(--cut-card)) 0, 100% var(--cut-card), 100% 100%, var(--cut-card) 100%, 0 calc(100% - var(--cut-card)));
+}
+
+/* The bar on top: the mark, the provider this demonstration signs in at, and the way out. */
 
 .topbar {
-    display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    padding: 1rem 2rem;
-    border-bottom: 1px solid var(--border);
-    background: var(--panel);
+    background: var(--paper);
+    border-bottom: var(--rule) solid var(--ink);
+    display: flex;
+    gap: 1.5rem;
+    height: 4rem;
+    padding: 0 1.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
-.brand { font-weight: 700; text-decoration: none; color: var(--text); }
-.topbar nav { display: flex; align-items: center; gap: 1rem; }
-.topbar .who { color: var(--muted); font-size: .9rem; }
-
-/* a logout is posted, so it is a form: it must neither take up room nor be seen */
-form.logout { display: inline; margin: 0; }
-form.logout .button { border: 0; cursor: pointer; font: inherit; font-weight: 600; }
-
-main { max-width: 60rem; margin: 0 auto; padding: 2rem; }
-
-h1 { font-size: 1.8rem; margin-bottom: .25rem; }
-h2 { font-size: 1.15rem; margin-top: 2rem; border-bottom: 1px solid var(--border); padding-bottom: .35rem; }
-
-.lead { color: var(--muted); margin-top: 0; }
-.muted { color: var(--muted); font-size: .9rem; }
-
-a { color: var(--accent); }
-
-.button {
-    display: inline-block;
-    padding: .5rem 1rem;
-    border-radius: .5rem;
-    background: var(--accent);
-    color: #14121f;
-    font-weight: 600;
+.topbar .brand {
+    align-items: center;
+    color: var(--ink);
+    display: flex;
+    gap: 0.75rem;
     text-decoration: none;
 }
 
-.card {
-    border: 1px solid var(--border);
-    border-left: 3px solid var(--muted);
-    border-radius: .6rem;
-    background: var(--panel);
-    padding: 1rem 1.25rem;
-    margin: 1rem 0;
+.topbar .brand img {
+    display: block;
+    height: 2rem;
 }
 
-.card.ok { border-left-color: var(--ok); }
-.card.error { border-left-color: var(--error); }
-.card h2 { margin-top: 0; border: 0; }
+.topbar .brand span {
+    border-left: var(--rule) solid var(--ink);
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    letter-spacing: 0.12em;
+    padding-left: 0.75rem;
+    text-transform: uppercase;
+}
 
-table.kv { width: 100%; border-collapse: collapse; margin: .5rem 0; }
-table.kv th {
-    text-align: left;
-    width: 14rem;
+.topbar .provider {
+    align-items: center;
+    background: var(--surface);
+    clip-path: polygon(0 0, calc(100% - var(--cut-tag)) 0, 100% var(--cut-tag), 100% 100%, var(--cut-tag) 100%, 0 calc(100% - var(--cut-tag)));
+    display: flex;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    gap: 0.5rem;
+    padding: 0.35rem 0.8rem;
+}
+
+.topbar nav {
+    align-items: center;
+    display: flex;
+    gap: 1.25rem;
+    margin-left: auto;
+}
+
+.topbar nav a {
+    color: var(--ink);
+    font-family: var(--font-heading);
+    font-size: 0.9rem;
+    text-decoration: none;
+}
+
+.topbar nav a:hover,
+.topbar nav a.active {
+    color: var(--accent-ink);
+}
+
+.topbar .who {
     color: var(--muted);
-    font-weight: 500;
-    vertical-align: top;
-    padding: .35rem .75rem .35rem 0;
-    border-bottom: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
 }
-table.kv td { padding: .35rem 0; border-bottom: 1px solid var(--border); word-break: break-word; }
 
-code { background: #1f2432; padding: .1rem .35rem; border-radius: .3rem; font-size: .875em; }
+.topbar form {
+    margin: 0;
+}
+
+/* The status square: outlined in ink, lit by Signal when what it stands for works. */
+
+.sq {
+    border: var(--rule) solid var(--ink);
+    display: inline-block;
+    flex: none;
+    height: 0.75rem;
+    width: 0.75rem;
+}
+
+.sq.ok {
+    background: var(--signal);
+}
+
+.sq.ko {
+    background: var(--error);
+}
+
+.sq.off {
+    background: repeating-linear-gradient(45deg, var(--divider) 0 2px, transparent 2px 4px);
+    border-color: var(--divider);
+}
+
+/* The two columns: the tree of features, and what the one chosen shows. */
+
+.shell {
+    display: grid;
+    flex: 1;
+    grid-template-columns: var(--tree-width) minmax(0, 1fr);
+}
+
+.tree {
+    border-right: var(--rule) solid var(--ink);
+    height: calc(100vh - 4rem);
+    overflow-y: auto;
+    padding: 1.25rem 0 2rem;
+    position: sticky;
+    top: 4rem;
+}
+
+.tree .group {
+    margin-bottom: 1rem;
+}
+
+.tree .group-title {
+    align-items: baseline;
+    color: var(--muted);
+    display: flex;
+    font-family: var(--font-heading);
+    font-size: 0.75rem;
+    justify-content: space-between;
+    letter-spacing: 0.12em;
+    padding: 0.25rem 1.25rem;
+    text-transform: uppercase;
+}
+
+.tree ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.tree li {
+    align-items: center;
+    border-left: 4px solid transparent;
+    display: flex;
+    gap: 0.6rem;
+    padding: 0.3rem 0.75rem 0.3rem 1rem;
+}
+
+.tree li:hover {
+    background: var(--surface);
+}
+
+.tree li.active {
+    background: var(--accent-100);
+    border-left-color: var(--accent);
+}
+
+.tree li a {
+    color: var(--ink);
+    flex: 1;
+    font-size: 0.92rem;
+    text-decoration: none;
+}
+
+.tree li.active a {
+    font-weight: 600;
+}
+
+.tree li form {
+    margin: 0;
+}
+
+.tree .play {
+    background: none;
+    border: 0;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 0.8rem;
+    padding: 0.1rem 0.3rem;
+    visibility: hidden;
+}
+
+.tree li:hover .play,
+.tree li.active .play {
+    visibility: visible;
+}
+
+.tree .play:hover {
+    color: var(--accent);
+}
+
+.tree .play[disabled] {
+    display: none;
+}
+
+.panel {
+    background-color: var(--paper);
+    background-image:
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 24px 24px;
+    min-width: 0;
+    padding: 2.5rem 3rem 4rem;
+}
+
+.panel > * {
+    max-width: 88rem;
+}
+
+.small {
+    font-size: 0.82rem;
+}
+
+/* A feature: what it is called, the one line that says what its client does. */
+
+.eyebrow {
+    color: var(--accent-ink);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.6rem;
+    text-transform: uppercase;
+}
+
+.does {
+    font-size: 1.35rem;
+    line-height: 1.35;
+    margin: 0.75rem 0 2rem;
+    max-width: 44rem;
+}
+
+.lead {
+    font-size: 1.1rem;
+    max-width: 48rem;
+}
+
+.muted {
+    color: var(--muted);
+}
+
+/* Two columns inside the panel: the client and its configuration, then the proof that it works. */
+
+.facing {
+    align-items: start;
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+}
+
+@media (max-width: 1100px) {
+    .facing {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* A card is an ink shape cut at two corners, and its field the same shape inset by one rule: the cut
+   corners keep their rule, which a border under clip-path would lose. */
+.card {
+    --card-rule: var(--ink);
+    background: var(--card-rule);
+    clip-path: polygon(0 0, calc(100% - var(--cut-card)) 0, 100% var(--cut-card), 100% 100%, var(--cut-card) 100%, 0 calc(100% - var(--cut-card)));
+    isolation: isolate;
+    margin: 0 0 1.25rem;
+    padding: 1.25rem 1.4rem;
+    position: relative;
+}
+
+.card::before {
+    background: var(--field);
+    clip-path: polygon(0 0, calc(100% - var(--cut-card) + 1px) 0, 100% calc(var(--cut-card) - 1px), 100% 100%, calc(var(--cut-card) - 1px) 100%, 0 calc(100% - var(--cut-card) + 1px));
+    content: "";
+    inset: var(--rule);
+    position: absolute;
+    z-index: -1;
+}
+
+.card h2,
+.card h3 {
+    margin-top: 0;
+}
+
+.card.error {
+    --card-rule: var(--error);
+}
+
+.card.quiet {
+    --card-rule: var(--divider);
+}
+
+.card-head {
+    align-items: center;
+    display: flex;
+    gap: 0.75rem;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.label {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.tag {
+    background: var(--surface);
+    clip-path: polygon(0 0, calc(100% - var(--cut-tag)) 0, 100% var(--cut-tag), 100% 100%, var(--cut-tag) 100%, 0 calc(100% - var(--cut-tag)));
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    padding: 0.2rem 0.7rem;
+}
+
+.tag.accent {
+    background: var(--accent-100);
+    color: var(--accent-ink);
+}
+
+/* The configuration, one member a line; the members that make the feature carry the accent. */
+
+.config {
+    background: var(--paper);
+    border-left: var(--rule) solid var(--divider);
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    line-height: 1.75;
+    margin: 0.75rem 0 0;
+    max-height: none;
+    overflow-x: auto;
+    padding: 0.75rem 0;
+}
+
+.config .line {
+    display: block;
+    padding: 0 1rem;
+    white-space: pre;
+}
+
+.config .line.hl {
+    background: var(--accent-100);
+    box-shadow: inset 4px 0 0 var(--accent);
+    color: var(--accent-ink);
+    font-weight: 600;
+}
+
+.config .key {
+    color: var(--ink);
+}
+
+.config .hl .key {
+    color: var(--accent-ink);
+}
+
+/* The proof: what travelled, one step a line, ticked. */
+
+.proofs {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.proofs > li {
+    border-top: 1px solid var(--hairline);
+    display: grid;
+    gap: 0.15rem 0.75rem;
+    grid-template-columns: auto minmax(0, 1fr);
+    padding: 0.65rem 0;
+}
+
+.proofs > li:first-child {
+    border-top: 0;
+}
+
+.proofs .sq {
+    margin-top: 0.3rem;
+}
+
+.proofs .step {
+    font-weight: 600;
+}
+
+.proofs .what {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    grid-column: 2;
+    overflow-wrap: anywhere;
+}
+
+.proofs details {
+    grid-column: 2;
+}
+
+.verdict {
+    align-items: center;
+    display: flex;
+    font-family: var(--font-heading);
+    font-size: 1.1rem;
+    gap: 0.6rem;
+    margin-bottom: 0.75rem;
+}
+
+.empty {
+    color: var(--muted);
+    padding: 1.5rem 0;
+    text-align: center;
+}
+
+/* Buttons: the primary one is the light of the tower. A button is cut like a card, its ground inset by
+   one rule so that the cut corners keep it. */
+
+.button,
+button.button {
+    --button-rule: var(--ink);
+    --button-ground: var(--field);
+    --button-text: var(--ink);
+    background: var(--button-rule);
+    border: 0;
+    clip-path: polygon(0 0, calc(100% - var(--cut-button)) 0, 100% var(--cut-button), 100% 100%, var(--cut-button) 100%, 0 calc(100% - var(--cut-button)));
+    color: var(--button-text);
+    cursor: pointer;
+    display: inline-block;
+    font-family: var(--font-heading);
+    font-size: 0.9rem;
+    font-weight: 600;
+    isolation: isolate;
+    letter-spacing: 0.04em;
+    padding: 0.6rem 1.35rem;
+    position: relative;
+    text-decoration: none;
+}
+
+.button::before {
+    background: var(--button-ground);
+    clip-path: polygon(0 0, calc(100% - var(--cut-button) + 1px) 0, 100% calc(var(--cut-button) - 1px), 100% 100%, calc(var(--cut-button) - 1px) 100%, 0 calc(100% - var(--cut-button) + 1px));
+    content: "";
+    inset: var(--rule);
+    position: absolute;
+    z-index: -1;
+}
+
+.button:hover {
+    --button-ground: var(--surface);
+    color: var(--button-text);
+}
+
+.button.primary {
+    --button-rule: var(--accent);
+    --button-ground: var(--accent);
+    --button-text: var(--paper);
+}
+
+.button.primary:hover {
+    --button-rule: var(--accent-600);
+    --button-ground: var(--accent-600);
+}
+
+.button.small {
+    font-size: 0.78rem;
+    padding: 0.4rem 0.95rem;
+}
+
+.button[disabled] {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+.actions {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+}
+
+form.inline {
+    display: inline;
+}
+
+/* Details, code and the decoded documents. */
+
+details > summary {
+    color: var(--accent-ink);
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    list-style: none;
+    margin-top: 0.25rem;
+}
+
+details > summary::before {
+    content: "+ ";
+}
+
+details[open] > summary::before {
+    content: "− ";
+}
 
 pre {
-    background: #10131b;
-    border: 1px solid var(--border);
-    border-radius: .5rem;
-    padding: 1rem;
-    overflow-x: auto;
-}
-
-pre.jwt { white-space: pre-wrap; word-break: break-all; color: var(--muted); }
-
-.steps li { margin: .25rem 0; }
-
-footer {
-    max-width: 60rem;
-    margin: 0 auto;
-    padding: 2rem;
-    color: var(--muted);
-    font-size: .85rem;
-    border-top: 1px solid var(--border);
-}
-
-/* the page that calls the API: the token it carries, and the answer of each call as it came back */
-textarea.token {
-    width: 100%;
-    background: #10131b;
-    color: var(--muted);
-    border: 1px solid var(--border);
-    border-radius: .5rem;
-    padding: .75rem;
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: .8rem;
+    background: var(--surface);
+    margin: 0.5rem 0;
+    max-height: 26rem;
+    overflow: auto;
+    padding: 0.85rem 1rem;
+    white-space: pre-wrap;
     word-break: break-all;
 }
 
-.card.call h2 { font-size: 1rem; }
-.card.call .button { border: 0; cursor: pointer; font: inherit; font-weight: 600; }
-.card.call pre.answer { white-space: pre-wrap; word-break: break-word; margin-bottom: .5rem; }
-.card.call details summary { color: var(--muted); font-size: .9rem; cursor: pointer; }
+pre.jwt {
+    font-size: 0.72rem;
+}
 
-/* the forge: a form of one fieldset per family of choices, and the presets above it */
-.presets { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 1rem; }
-.presets .card { margin: 0; }
-.presets .card h2 { font-size: 1rem; }
-.presets .card p { font-size: .9rem; color: var(--muted); }
+:not(pre) > code {
+    background: var(--surface);
+    padding: 0.05rem 0.35rem;
+}
 
-form.inline { display: inline; margin: 0; }
-form.inline .button { border: 0; cursor: pointer; font: inherit; font-weight: 600; }
+table.kv {
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    width: 100%;
+}
 
-form.compose fieldset {
-    border: 1px solid var(--border);
-    border-radius: .6rem;
-    background: var(--panel);
-    margin: 1rem 0;
+table.kv th,
+table.kv td {
+    border-top: 1px solid var(--hairline);
+    padding: 0.45rem 0.75rem 0.45rem 0;
+    text-align: left;
+    vertical-align: top;
+}
+
+table.kv th {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 400;
+    white-space: nowrap;
+    width: 30%;
+}
+
+table.kv td {
+    overflow-wrap: anywhere;
+}
+
+/* The overview of the home page. */
+
+.steps {
+    counter-reset: step;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    list-style: none;
+    margin: 2rem 0;
+    padding: 0;
+}
+
+.steps li {
+    border-top: var(--rule) solid var(--ink);
+    counter-increment: step;
+    padding-top: 0.75rem;
+}
+
+.steps li::before {
+    color: var(--accent);
+    content: "0" counter(step);
+    display: block;
+    font-family: var(--font-heading);
+    font-size: 1.6rem;
+}
+
+.groups {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+}
+
+.groups .card {
+    margin: 0;
+}
+
+.groups ul {
+    list-style: none;
+    margin: 0.5rem 0 0;
+    padding: 0;
+}
+
+.groups li {
+    align-items: center;
+    display: flex;
+    font-size: 0.9rem;
+    gap: 0.5rem;
+    padding: 0.15rem 0;
+}
+
+.notice {
+    background: var(--accent-100);
+    border-left: 4px solid var(--accent);
+    margin: 0 0 1.5rem;
+    padding: 0.75rem 1rem;
+}
+
+.notice.error {
+    background: #fbebeb;
+    border-left-color: var(--error);
+}
+
+/* The forms of the forge. */
+
+fieldset {
+    border: var(--rule) solid var(--ink);
+    margin: 0 0 1rem;
     padding: 1rem 1.25rem;
 }
-form.compose legend { color: var(--accent); font-weight: 600; padding: 0 .35rem; }
-form.compose .field { display: block; margin: .75rem 0; }
-form.compose .field-label { display: block; font-weight: 600; font-size: .95rem; }
-form.compose .field-help { display: block; color: var(--muted); font-size: .85rem; }
-form.compose .field.check { display: flex; flex-wrap: wrap; align-items: baseline; gap: .5rem; }
-form.compose .field.check .field-help { flex-basis: 100%; }
-form.compose select,
-form.compose input[type="text"],
-form.compose textarea {
-    width: 100%;
-    max-width: 32rem;
-    margin: .25rem 0;
-    background: #10131b;
-    color: var(--text);
-    border: 1px solid var(--border);
-    border-radius: .4rem;
-    padding: .4rem .5rem;
-    font: inherit;
+
+legend {
+    font-family: var(--font-heading);
+    padding: 0 0.4rem;
 }
-form.compose textarea { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .8rem; }
-form.compose .scopes { display: flex; flex-wrap: wrap; gap: .75rem; align-items: baseline; }
-form.compose .scopes .field-label,
-form.compose .scopes .field-help { flex-basis: 100%; }
+
+label {
+    display: block;
+    margin: 0.3rem 0;
+}
+
+input[type="text"],
+select,
+textarea {
+    background: var(--field);
+    border: var(--rule) solid var(--ink);
+    border-radius: 0;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    padding: 0.4rem 0.6rem;
+    width: 100%;
+}
+
+textarea.token {
+    min-height: 5rem;
+}
+
+.presets {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+}
+
+footer {
+    border-top: var(--rule) solid var(--ink);
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    padding: 0.75rem 1.5rem;
+}
+
+/* A run waiting on the user: the code they type, large, and a square that breathes. */
+
+.code {
+    font-family: var(--font-mono);
+    font-size: 1.8rem;
+    letter-spacing: 0.2em;
+    margin: 1rem 0;
+}
+
+.pulse {
+    animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    50% {
+        background: var(--signal);
+    }
+}

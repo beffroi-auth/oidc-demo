@@ -20,9 +20,9 @@
         </table>
         <p>
             <a class="button" href="{{ path('app_forge_start', {handle: handle}) }}">Try it again</a>
-            <a class="button" href="{{ path('app_home', {from: handle}) }}#compose">Change the composition</a>
+            <a class="button" href="{{ path('app_forge', {from: handle}) }}#compose">Change the composition</a>
         </p>
     {% else %}
-        <p><a class="button" href="{{ path('app_home') }}">Back to the forge</a></p>
+        <p><a class="button" href="{{ path('app_forge') }}">Back to the forge</a></p>
     {% endif %}
 {% endblock %}

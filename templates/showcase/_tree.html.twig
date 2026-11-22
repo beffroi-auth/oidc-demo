@@ -1,0 +1,28 @@
+{# The tree of features, on every page: a square says whether the client of a feature worked the last time
+   it ran in this browser, and the button beside it runs it from wherever the visitor is. #}
+<nav class="tree" aria-label="Features">
+    {% for group in showcase.groups %}
+        <div class="group">
+            <div class="group-title"><span>{{ group.title }}</span><span>{{ group.features|length }}</span></div>
+            <ul>
+                {% for leaf in group.features %}
+                    {% set status = leaf.client.status %}
+                    <li class="{{ feature is defined and feature.slug == leaf.slug ? 'active' }}" data-feature="{{ leaf.slug }}" data-status="{{ status }}">
+                        <span class="sq {{ status }}" title="{{ {ok: 'Works', ko: 'Failed', off: 'Not offered by this provider', idle: 'Not run yet'}[status] }}"></span>
+                        <a href="{{ path('app_feature', {slug: leaf.slug}) }}">{{ leaf.client.title }}</a>
+                        <form method="post" action="{{ path('app_feature_run', {slug: leaf.slug}) }}">
+                            {% for name, value in leaf.client.runFields %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endfor %}
+                            <button class="play" type="submit" title="Run" aria-label="Run {{ leaf.client.title }}"{{ status == 'off' ? ' disabled' }}>▶</button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endfor %}
+    <div class="group">
+        <div class="group-title"><span>Your own</span></div>
+        <ul>
+            <li><span class="sq"></span><a href="{{ path('app_forge') }}">Compose a client</a></li>
+        </ul>
+    </div>
+</nav>

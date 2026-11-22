@@ -15,8 +15,9 @@
     <div class="card ok">
         <h2>The token the calls carry</h2>
         <p class="muted">Obtained by the <code>main</code> firewall for the client <code>{{ client_id }}</code>.
-            Any other token this demonstration handed out works as well, from <a href="{{ path('app_home') }}">a rung of the ladder</a>
-            for instance: paste it here and the calls below use it.</p>
+            A token of another client this demonstration declares works as well: paste it here and the calls
+            below use it. A token of a client <a href="{{ path('app_forge') }}">the forge</a> built is refused,
+            because this API does not ask the provider as that client.</p>
         <textarea id="api-token" class="token" rows="3" spellcheck="false" aria-label="The access token the calls carry">{{ access_token }}</textarea>
         <p class="muted">It expires ten minutes after it was issued. Sign in again to get another one.</p>
     </div>

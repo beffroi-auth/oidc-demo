@@ -16,11 +16,8 @@ use Symfony\Component\Routing\Attribute\Route;
 
 /**
  * The forge of clients (beffroi#582): the page where a client is composed option by option, built at the
- * provider by dynamic registration, and then signed in with.
- *
- * It replaced the ladder of six rungs, whose clients were written in the configuration of the provider
- * and whose capabilities were the six sets somebody had chosen. What a visitor chooses here is every
- * member the provider announces, and the six rungs are presets of this page.
+ * provider by dynamic registration, and then signed in with. What a visitor chooses here is every member
+ * the provider announces, and the clients worth showing are presets of this page.
  */
 final class ForgeController extends AbstractController
 {
@@ -38,7 +35,7 @@ final class ForgeController extends AbstractController
      * one of the presets and "from" with the composition of a client that exists, so that a client is
      * taken apart and built again rather than composed from nothing twice.
      */
-    #[Route('/', name: 'app_home', methods: ['GET'])]
+    #[Route('/forge', name: 'app_forge', methods: ['GET'])]
     public function forge(Request $request): Response
     {
         return $this->page(

@@ -121,7 +121,7 @@
     {% endif %}
 
     <p>
-        <a class="button" href="{{ path('app_home', {from: client.handle}) }}#compose">Take it apart and build another</a>
+        <a class="button" href="{{ path('app_forge', {from: client.handle}) }}#compose">Take it apart and build another</a>
         <form class="inline" method="post" action="{{ path('app_forge_delete', {handle: client.handle}) }}">
             <button class="button" type="submit">Delete this client (RFC 7592 §2.3)</button>
         </form>

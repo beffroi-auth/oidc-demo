@@ -1,0 +1,19 @@
+{% extends '@!ApiPlatform/SwaggerUi/index.html.twig' %}
+
+{# Swagger UI signs in as the client the demonstration registered for it, whose identifier is known only
+   once it is registered (src/Showcase/Api/SwaggerClient.php): it is written here, when the page is
+   rendered, and not in the configuration of API Platform, which fixes it when the container is built. #}
+{% block head_javascript %}
+    {% set oauth = swagger_data.oauth|merge({
+        clientId: swagger_client.clientId ?? '',
+        redirectUrl: absolute_url(constant('App\\Showcase\\Api\\SwaggerClient::REDIRECT')),
+    }) %}
+    {# json_encode(65) is JSON_UNESCAPED_SLASHES|JSON_HEX_TAG, as the original writes it #}
+    <script id="swagger-data" type="application/json">{{ swagger_data|merge({oauth: oauth})|json_encode(65)|raw }}</script>
+{% endblock %}
+
+{% block header %}
+    <header>
+        <a id="logo" href="{{ path('app_feature', {slug: 'swagger'}) }}" style="color: #fff; font-weight: 600; text-decoration: none;">← Beffroi demo</a>
+    </header>
+{% endblock %}

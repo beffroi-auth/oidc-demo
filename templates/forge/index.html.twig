@@ -74,8 +74,8 @@
     {% endif %}
 
     <h2>Presets</h2>
-    <p class="muted">Eight compositions written down. A preset fills the form below, and building it
-        replaces the client of the same name.</p>
+    <p class="muted">{{ presets|length }} compositions written down. A preset fills the form below, and building
+        it replaces the client of the same name.</p>
     <div class="presets">
         {% for preset in presets %}
             <div class="card preset">

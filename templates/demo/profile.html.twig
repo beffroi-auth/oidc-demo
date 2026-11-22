@@ -1,5 +1,8 @@
 {% extends 'base.html.twig' %}
 
+{# A boolean claim, "email_verified" or "phone_number_verified" among them, reads yes or no. #}
+{% macro claim(value) %}{{ value is same as(true) ? 'yes' : (value is same as(false) ? 'no' : (value is iterable ? value|json_encode : value)) }}{% endmacro %}
+
 {% block title %}OIDC profile{% endblock %}
 
 {% block body %}
@@ -17,7 +20,7 @@
     <h2>Standard claims</h2>
     <table class="kv">
         {% for claim, value in claims %}
-            <tr><th>{{ claim }}</th><td><code>{{ value is iterable ? value|json_encode : value }}</code></td></tr>
+            <tr><th>{{ claim }}</th><td><code>{{ _self.claim(value) }}</code></td></tr>
         {% endfor %}
     </table>
 
@@ -25,7 +28,7 @@
         <h2>Additional claims</h2>
         <table class="kv">
             {% for claim, value in additional_claims %}
-                <tr><th>{{ claim }}</th><td><code>{{ value is iterable ? value|json_encode : value }}</code></td></tr>
+                <tr><th>{{ claim }}</th><td><code>{{ _self.claim(value) }}</code></td></tr>
             {% endfor %}
         </table>
     {% endif %}

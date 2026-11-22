@@ -21,7 +21,7 @@
             </span>
             <nav>
                 {% block topbar_nav %}
-                    {% if app.user %}<span class="who">{{ app.user.userIdentifier|slice(0, 18) }}</span>{% endif %}
+                    {% if app.user %}<span class="who">{{ app.user|signed_in_name }}</span>{% endif %}
                     <a href="{{ path('app_profile') }}">Profile</a>
                     <a href="{{ path('app_api_calls') }}">API calls</a>
                     <a href="{{ path('app_forge') }}">Forge</a>

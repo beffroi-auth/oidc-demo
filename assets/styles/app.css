@@ -207,6 +207,10 @@ p {
     margin: 0;
 }
 
+.topbar .to-tree {
+    display: none;
+}
+
 /* The status square: outlined in ink, lit by Signal when what it stands for works. */
 
 .sq {
@@ -800,5 +804,57 @@ footer {
 @keyframes pulse {
     50% {
         background: var(--signal);
+    }
+}
+
+/* On a phone: one column, the panel first and the tree under it, which the top bar links to. */
+
+@media (max-width: 760px) {
+    .topbar {
+        flex-wrap: wrap;
+        gap: 0.5rem 1rem;
+        height: auto;
+        padding: 0.75rem 1rem;
+        position: static;
+    }
+
+    .topbar nav {
+        flex-wrap: wrap;
+        gap: 0.5rem 1rem;
+        margin-left: 0;
+        width: 100%;
+    }
+
+    .topbar .to-tree {
+        display: inline;
+    }
+
+    .shell {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .tree {
+        border-right: 0;
+        border-top: var(--rule) solid var(--ink);
+        height: auto;
+        order: 1;
+        position: static;
+    }
+
+    /* a touch screen has no hover to show it */
+    .tree .play {
+        visibility: visible;
+    }
+
+    .panel {
+        padding: 1.5rem 1rem 2.5rem;
+    }
+
+    .steps {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    table.kv th {
+        white-space: normal;
     }
 }

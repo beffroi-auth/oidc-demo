@@ -1,6 +1,6 @@
 {# The tree of features, on every page: a square says whether the client of a feature worked the last time
    it ran in this browser, and the button beside it runs it from wherever the visitor is. #}
-<nav class="tree" aria-label="Features">
+<nav class="tree" id="features" aria-label="Features">
     {% for group in showcase.groups %}
         <div class="group">
             <div class="group-title"><span>{{ group.title }}</span><span>{{ group.features|length }}</span></div>

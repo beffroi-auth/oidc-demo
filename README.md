@@ -45,7 +45,7 @@ A token gets in one of two ways (`src/Api/AddressedHereOrDescribed.php`):
 
 `/api/v1/docs` is Swagger UI. Its **Authorize** button runs the authorization code flow with PKCE as a public client the demonstration registers, asking for a token addressed to the API. The endpoints come from the discovery document (`src/Api/OpenApi/TheProviderOfTheFlow.php`) and the client identifier is written into the page when it is rendered (`templates/bundles/ApiPlatformBundle/SwaggerUi/index.html.twig`). The page asks for `openid` beside the scopes of the API, the provider refusing an authorization request without it, and leaves out of its token request the `X-Requested-With` header the provider does not allow across origins. Each operation declares its scope in the OpenAPI document. A token can also be pasted under `bearer`.
 
-`/api-calls` calls the API from a page with the access token of the session. The six routes under `/api/me` and `/api/service` are the resource server of the reference client, one way of checking the same token each: introspection, signed introspection, `at+jwt` verified offline, two tokens bound by DPoP, and a token addressed elsewhere.
+`/api-calls` calls the API from a page with the access token of the session. The six routes under `/api/me` and `/api/service` are resource servers beside the API, each checking a token one way: the access token of the session introspected (`/api/me`), introspected with a signed answer (`/api/me/signed`, RFC 9701) and verified offline as an `at+jwt` (`/api/me/offline`); a token bound by DPoP, introspected (`/api/me/dpop/introspected`) or verified offline (`/api/me/dpop`); and a token a gateway obtained by exchange (RFC 8693) for the resource `/api/service`, verified offline.
 
 ## The forge
 

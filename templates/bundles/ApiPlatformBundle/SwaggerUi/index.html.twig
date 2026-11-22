@@ -17,3 +17,29 @@
         <a id="logo" href="{{ path('app_feature', {slug: 'swagger'}) }}" style="color: #fff; font-weight: 600; text-decoration: none;">← Beffroi demo</a>
     </header>
 {% endblock %}
+
+{# Two things Swagger UI does that the provider refuses, mended on the instance the script of API Platform
+   builds. It asks only for the scopes ticked in its dialog, and the provider refuses an authorization
+   request without "openid" (OIDC Core section 3.1.2.1): "openid" is selected beforehand. It adds
+   "X-Requested-With" to its token request, a header the provider does not allow across origins, so the
+   preflight of that request fails and the code is never exchanged: the header is taken out. #}
+{% block javascript %}
+    {{ parent() }}
+    <script>
+        (() => {
+            const build = window.SwaggerUIBundle;
+            window.SwaggerUIBundle = Object.assign((config) => {
+                const intercept = config.requestInterceptor ?? ((request) => request);
+                const ui = build({...config, requestInterceptor: (request) => {
+                    delete request.headers['X-Requested-With'];
+
+                    return intercept(request);
+                }});
+                const initOAuth = ui.initOAuth;
+                ui.initOAuth = (options) => initOAuth({...options, scopes: ['openid']});
+
+                return ui;
+            }, build);
+        })();
+    </script>
+{% endblock %}

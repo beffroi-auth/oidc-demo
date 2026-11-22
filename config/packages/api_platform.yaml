@@ -47,7 +47,9 @@ api_platform:
         flow: authorizationCode
         pkce: true
         scopes:
-            profile: 'Read the account the token names'
+            # the provider refuses an authorization request without it (OIDC Core section 3.1.2.1), so the
+            # page selects it beforehand (templates/bundles/ApiPlatformBundle/SwaggerUi/index.html.twig)
+            openid: 'Asked of every sign-in at the provider'
             invoices.read: 'Read the invoices'
             invoices.pay: 'Pay an invoice'
             invoices.write: 'Write an invoice'

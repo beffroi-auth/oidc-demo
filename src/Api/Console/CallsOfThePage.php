@@ -31,7 +31,7 @@ final readonly class CallsOfThePage
                 label: 'Who the token names',
                 method: 'GET',
                 path: '/api/v1/account',
-                scope: 'profile',
+                scope: 'invoices.read',
                 says: 'The subject, the scopes the provider granted and the client the token was issued to, as the introspection response described it.',
             ),
             new ApiCall(

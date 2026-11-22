@@ -12,8 +12,7 @@ use App\State\AccountProvider;
  * granted, and the client it was issued to, all of it read from what the firewall verified and nothing of
  * it stored here.
  *
- * It is behind "profile", a scope of OIDC Core section 5.4 the demonstration already asks for, so that
- * the API has one operation whose scope was not invented for it.
+ * It is behind "invoices.read": whoever may read the invoices of the subject may read who that subject is.
  */
 #[ApiResource(
     shortName: 'Account',
@@ -21,7 +20,7 @@ use App\State\AccountProvider;
     operations: [
         new Get(
             uriTemplate: '/account',
-            security: "is_granted('OAUTH2_SCOPE(profile)')",
+            security: "is_granted('OAUTH2_SCOPE(invoices.read)')",
             provider: AccountProvider::class,
         ),
     ],

@@ -147,12 +147,14 @@ services:
     # What the forge built, and which sessions of the provider its back channel said had ended: two pools
     # of this instance alone, as the one of the "main" firewall below is, so that two demonstrations
     # running side by side on one machine neither read each other's clients nor end each other's sessions.
+    # The clients are kept outside the cache directory: a client the provider registered, and the key of
+    # the issuer a tenant pinned, outlive a cache:clear, which would otherwise register them again.
     app.forge_clients:
         class: Symfony\Component\Cache\Adapter\FilesystemAdapter
         arguments:
             - 'forge_clients'
             - 0
-            - '%kernel.cache_dir%/forge-clients'
+            - '%kernel.project_dir%/var/forge-clients'
 
     app.forge_ended_sessions:
         class: Symfony\Component\Cache\Adapter\FilesystemAdapter

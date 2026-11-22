@@ -42,7 +42,7 @@ final readonly class SwaggerClient
             'grant_types' => ['authorization_code'],
             'response_types' => ['code'],
             'redirect_uris' => [$this->urls->getAbsoluteUrl(self::REDIRECT)],
-            'scope' => 'profile invoices.read invoices.pay invoices.write',
+            'scope' => 'openid invoices.read invoices.pay invoices.write',
         ];
     }
 

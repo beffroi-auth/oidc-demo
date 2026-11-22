@@ -8,8 +8,7 @@ namespace App\Forge;
  * What a composition would ask of Symfony's own authenticator that it cannot do yet, named by the item of
  * the status document that tracks it.
  *
- * This is the one thing the forge shows that the ladder of rungs could not: a client is composed, and the
- * page says whether `oidc_login` would serve that very client, or which gap stops it. A composition that
+ * A client is composed, and the page says whether `oidc_login` would serve that very client, or which gap stops it. A composition that
  * hits none of them is one a Symfony application reaches with configuration alone, which is what the
  * reference client of the "main" firewall is there to prove.
  *
